@@ -68,7 +68,7 @@ GET https://maps.googleapis.com/maps/api/place/nearbysearch/json
   ?keyword=Tokyo%20Disneyland
   &location=35.6897%2C139.6922
   &radius=20000
-  &key=AIzaSyDyjYUH0hSbRyZlhHi0HWAybomsnfXaHy8
+  &key={{API_KEY}}
 
 ###
 # curl 'http://router.project-osrm.org/table/v2/car/13.388860,52.517037;13.397634,52.529407?annotations=duration'
