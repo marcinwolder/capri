@@ -1,0 +1,133 @@
+<div class="antialiased sans-serif h-10 overflow-visible"
+>
+  <div class="flex flex-col items-center min-w-[16rem]" [ngClass]="{'min-w-[310px]': range}">
+    <div
+      class="
+                w-full
+                mx-auto
+                relative
+                px-3
+                py-3
+                leading-none
+                rounded-lg
+                shadow-sm
+                focus:outline-none focus:shadow-outline
+                text-gray-600
+                font-medium
+                bg-white
+                flex
+                justify-between
+              "
+      (click)="toggleDatepicker()"
+    >
+      <span class="text-gray-800 flex-1">{{ getInputValue() }}</span>
+      <div class="text-gray-700 flex-grow-0 ml-2">
+        <i class="fa-calendar fa" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div
+      class="bg-white mt-2 rounded-lg shadow p-4 w-72 z-50"
+      [hidden]="!showDatepicker"
+    >
+      <div class="flex justify-between items-center mb-2">
+        <div>
+          <span class="text-lg font-bold text-gray-800">{{ MONTH_NAMES[month] }}</span>
+          <span class="ml-1 text-lg text-gray-600 font-normal">{{ year }}</span>
+        </div>
+        <div>
+          <button
+            type="button"
+            class="
+                      transition
+                      ease-in-out
+                      duration-100
+                      inline-flex
+                      cursor-pointer
+                      hover:bg-gray-200
+                      p-1
+                      rounded-full
+                    "
+            [ngClass]="{ 'cursor-not-allowed opacity-25': !canSelectPastDates
+                                                && month<=currentDate.getMonth() && year<=currentDate.getFullYear() }"
+            (click)="previousMonth()"
+            [disabled]="!canSelectPastDates && month<=currentDate.getMonth() && year<=currentDate.getFullYear()"
+          >
+            <svg
+              class="h-6 w-6 text-gray-500 inline-flex"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="
+                      transition
+                      ease-in-out
+                      duration-100
+                      inline-flex
+                      cursor-pointer
+                      hover:bg-gray-200
+                      p-1
+                      rounded-full
+                    "
+            (click)="nextMonth()"
+          >
+            <svg
+              class="h-6 w-6 text-gray-500 inline-flex"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap mb-3 -mx-1">
+        <ng-container *ngFor="let day of DAYS; let index = index">
+          <div style="width: 14.26%" class="px-1">
+            <div class="text-gray-800 font-medium text-center text-xs">{{ day }}</div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="flex flex-wrap -mx-1">
+        <ng-container *ngFor="let _ of blank_days">
+          <div style="width: 14.28%" class="text-center border p-1 border-transparent text-sm box-border"></div>
+        </ng-container>
+        <ng-container *ngFor="let date of no_of_days; let _ = index; trackBy: trackByIdentity">
+          <div style="width: 14.28%" class="px-1 mb-1">
+            <div
+              (click)="setDate(date)"
+              class="
+                        cursor-pointer
+                        text-center text-sm
+                        rounded-full
+                        leading-loose
+                        transition
+                        ease-in-out
+                        duration-100
+                        border
+                      "
+              [ngClass]="{
+                        'bg-blue-500 text-white': isSelectedDate(date),
+                        'text-gray-700 hover:bg-blue-200': !isSelectedDate(date),
+                        'bg-blue-300': range&&firstDateSelected&&secondDateSelected&&isBetweenDates(date),
+                        'border-blue-600': isToday(date),
+                        'border-transparent': !isToday(date),
+                        'cursor-not-allowed opacity-25': !canSelectPastDates && isPastDate(date)
+                      }"
+            >
+              {{ date }}
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

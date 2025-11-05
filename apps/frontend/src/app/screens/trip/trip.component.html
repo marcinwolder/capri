@@ -1,0 +1,217 @@
+<app-background [image]="'2.jpg'" xmlns="http://www.w3.org/1999/html"></app-background>
+
+<div *ngIf="!isLoaded&&!error"
+     class="flex flex-col h-full w-full justify-center align-middle bg-gray-900 bg-opacity-20 px-2">
+  <h1 class="text-center text-white text-shadow  text-5xl">Relax while we work on your trip</h1>
+  <h2 class="text-center text-white text-shadow text-4xl">This can take a few minutes.</h2>
+  <app-spinner [isLoading]="true" class="my-10"></app-spinner>
+</div>
+
+
+<div class="flex justify-center align-middle">
+  <app-error-box class="mt-20 p-3 rounded-2xl bg-red-200" *ngIf="error">
+    {{ error }}
+    <br/>
+    Please try again later.
+  </app-error-box>
+</div>
+
+<ng-container *ngIf="isLoaded&&!error">
+  <!-- Map -->
+  <div class="absolute inset-0 m-auto z-20 bg-white rounded-md shadow shadow-gray-300 my-3 mx-5 p-1"
+       *ngIf="showMap">
+    <button class="absolute top-0 right-0 m-3 z-auto z-1000 bg-red-500 hover:bg-red-700
+                   text-white font-bold text-md py-2 px-4 rounded" (click)="toggleMap()">
+      Close
+    </button>
+    <app-map [attractions]="attractions"></app-map>
+  </div>
+
+  <div id="scroll-top"></div>
+
+  <div class="container mx-auto p-4">
+    <div class="bg-white rounded-lg rounded-b-none p-6 pb-3 border-b antialiased">
+      <div class="text-gray-900 antialiased"
+           [ngClass]="{'line-clamp-3': !displayAllSummary}">
+        {{ summary }}
+      </div>
+      <div class="cursor-pointer mt-2 w-fit text-blue-500 hover:text-blue-600"
+           (click)="displayAllSummary=!displayAllSummary">
+        {{ displayAllSummary ? 'Show less' : 'Show more...' }}
+      </div>
+    </div>
+    <nav class="sticky top-0 z-10 bg-white overflow-hidden border-b flex justify-between rounded-lg rounded-t-none">
+      <ul
+        class="flex -mb-px text-sm font-medium text-center text-gray-700 border-b border-gray-200 overflow-x-auto shadow drop-shadow-lg">
+        <li class="mr-2 flex-shrink-0" *ngFor="let _ of attractions; let i = index">
+          <a
+            class="inline-block p-4 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300"
+            [ngClass]="{'border-blue-500 text-blue-600': currentDayIndex === i}"
+            (click)="scrollToSection('scroll-top'); currentDayIndex=i;">
+            Day {{ i + 1 }}
+          </a>
+        </li>
+      </ul>
+      <button class="px-4 text-blue-500 hover:text-blue-600 text-4xl" (click)="toggleMap()">
+        <i class="fa-solid fa-map"></i>
+      </button>
+    </nav>
+
+    <div class="mt-4">
+      <ng-container *ngFor="let day of attractions; index as i;">
+        <div [id]="'section-day-'+i" *ngIf="i===currentDayIndex"
+             class="p-4 mb-4 bg-white border rounded-lg shadow-xs scroll-mt-16">
+          <div class="flex align-middle items-center">
+            <h2 class="text-lg font-semibold text-gray-800 block">
+              Day {{ attractions.indexOf(day) + 1 }}
+            </h2>
+            <div class="ml-5 relative flex forecast">
+              <img src="{{getWeatherIcon(weatherForecasts[i])}}" class="max-h-12 bg-gray-300 rounded-2xl">
+              <span class="p-2 hidden">{{ getWeatherDescription(weatherForecasts[i]) }}</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <ng-container *ngIf="day.length === 0">
+              <div class="flex items-center">
+                <span class="text-lg text-gray-800">No attractions found for today :(</span>
+              </div>
+            </ng-container>
+            <div *ngFor="let attraction of day; index as j">
+              <div class="p-2 mt-2 bg-gray-100 rounded-lg shadow-xs">
+                <div class="flex items-center justify-between" (click)="toggleAttractionDetails(i, j)">
+                  <h3 class="mx-4 text-lg font-semibold text-gray-800">
+                    {{ attraction.name }}
+                  </h3>
+                  <div class="mt-2">
+                    <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                      <i class="fa-solid fa-caret-down"
+                         [ngClass]="{'rotate-180': attractions[i][j].visible}"></i>
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="attractions[i][j].visible" class="flex slide-down p-2 pb-0 items-stretch
+                          flex-col flex-col-reverse lg:flex-row">
+                  <div class="p-2 w-full flex-1">
+                    <p>
+                      {{ attraction.description }}
+                    </p>
+                    <div class="my-5">
+                      <span *ngIf="attraction.personal_rating"
+                            class="inline-block mr-2 pr-2 pr border-r">
+                        Personal rating:
+                        <span class="font-semibold">
+                          {{ Number.parseFloat(String(attraction.personal_rating * 5)).toFixed(1) }}
+                        </span>
+                      </span>
+                      <span class="inline-block mr-2 pr-2 pr border-r">
+                          Rating: <span class="font-semibold">{{ attraction.rating }}</span>
+                        </span>
+                      <span class="inline-block mr-2 pr-2 pr border-r">
+                          Reviews: <span class="font-semibold">{{ attraction.reviews }}</span>
+                        </span>
+                      <span class="inline-block mr-2 pr-2 pr">
+                          <i *ngFor="let i of [0,1,2,3]" class="fa-solid fa-dollar-sign mr-1"
+                             [ngClass]="{'text-blue-500': i <= attraction.price,
+                                   'text-gray-700': i > attraction.price}"></i>
+                        </span>
+                      <span class="block">
+                          Categories:
+                          <span *ngFor="let cat of attraction.types" class="mr-1 italic">
+                            {{ getCategoryName(categories, cat) }}
+                          </span>
+                      </span>
+                      <div class="my-2 flex flex-col gap-2">
+                        <app-rating class="text-lg"
+                                    [value]="attraction.user_rating"
+                                    (onSetRating)="rateAttraction(i, j , $event)">
+                        </app-rating>
+
+                        <div class="flex justify-start lg:flex-row flex-col-reverse lg:items-center">
+
+                          <a href="{{attraction.googleMapsUri}}" target="_blank"
+                             class="border p-2 shadow bg-white hover:bg-gray-200 w-48 text-center max-h-fit flex-shrink-0 lg:mr-2">
+                            Open Google Maps
+                            <i class="fa-solid fa-map ml"></i>
+                          </a>
+
+                          <div>{{ attraction.formattedAddress }}</div>
+
+                        </div>
+
+                        <button class="text-white p-2  my-2 w-48 text-center"
+                                [ngClass]="{'bg-blue-500 hover:bg-blue-600': !attraction.restaurants,
+                                            'bg-gray-500 cursor-default': attraction.restaurants}"
+                                (click)="searchRestaurants(attraction)" [disabled]="attraction.restaurants">
+                          Nearby restaurants <i class="ml-1 fa-solid fa-utensils"></i>
+                        </button>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex w-full justify-center items-center flex-1">
+                    <img class="object-cover max-h-60 max-w-96 w-full" [src]="getImageUrl(attraction)" alt="image">
+                  </div>
+
+                </div>
+
+                <div *ngIf="attraction.restaurants && attraction.visible"
+                     class="overflow-x-auto text-gray-700 flex space-x-2 whitespace-nowrap">
+                  <span *ngIf="attraction.restaurants.length===0"
+                        class="ml-3 text-xl">
+                    We could not find suitable restaurants nearby
+                  </span>
+                  <div *ngFor="let restaurant of attraction.restaurants"
+                       class="flex flex-col bg-white p-3 pt-1 rounded-xl [&>*]:py-1">
+                    <span class="font-bold">{{ restaurant.name }}</span>
+                    <div>
+                                  <span class="inline-block mr-2 pr-2 pr border-r">
+                                    Rating: <span class="font-semibold">{{ restaurant.rating }}</span>
+                                  </span>
+                      <span class="inline-block mr-2 pr-2 pr">
+                                  Reviews: <span class="font-semibold">{{ restaurant.reviews }}</span>
+                                </span>
+                    </div>
+                    <div>
+                                <span class="">Personal rating:
+                                  <span class="font-semibold">
+                                    {{ Number.parseFloat(String(restaurant.personal_rating!)).toFixed(1) }}
+                                  </span>
+                                </span>
+                      <span class="inline-block ml-2">
+                                  <i *ngFor="let i of [0,1,2,3]" class="fa-solid fa-dollar-sign mr-1"
+                                     [ngClass]="{'text-blue-500': i <= restaurant.price,
+                                           'text-gray-700': i > restaurant.price}"></i>
+                                </span>
+                    </div>
+                    <div class="flex italic">
+                                  <span *ngFor="let type of restaurant.types; index as type_index"
+                                        [ngClass]="{'ml-2 pl-2 border-l': type_index!==0}">
+                                    {{ getCategoryName(categories_restaurant, type) }}
+                                  </span>
+                    </div>
+                    <div>
+                      <a href="{{restaurant.googleMapsUri}}" target="_blank"
+                         class="border p-1 px-2 shadow bg-white hover:bg-gray-200 w-fit mr-2">
+                        Open Google Maps
+                        <i class="fa-solid fa-map ml"></i>
+                      </a>
+                      <app-transportation
+                        [transportation]="restaurant.transportation!"></app-transportation>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="mt-2 ml-3" *ngIf="attraction.transportation">
+                <app-transportation [transportation]="attraction.transportation"></app-transportation>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ng-container>

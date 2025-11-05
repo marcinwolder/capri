@@ -1,0 +1,32 @@
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-down {
+  animation: slideDown 0.5s ease forwards;
+}
+
+
+.fa-caret-down {
+  transition: transform 0.3s ease;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.z-1000 {
+  z-index: 1000;
+}
+
+.forecast:hover span {
+  display: block
+}
+

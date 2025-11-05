@@ -1,0 +1,14 @@
+export const environment = {
+  backendHost: '',
+  llamaHost: '',
+  firebase: {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: ""
+  },
+  googlePlacesAPIKey: ''
+};

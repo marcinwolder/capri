@@ -1,0 +1,50 @@
+<div class="flex flex-col justify-center items-center">
+
+  <h1 class="text-3xl font-bold text-center text-shadow my-5">Please select the dates of your trip</h1>
+  <app-date-picker (onDateSelect)="setDates([$event[0], $event[1]])"
+                   [date]="dates[0]" [secondDate]="dates[1]" [range]="true" [canSelectPastDates]="false">
+  </app-date-picker>
+
+  <div class="mt-5 w-full">
+    <h1 class="text-3xl font-bold text-center text-shadow">How much do you want to spend?</h1>
+
+    <div class="flex justify-center items-center py-2 px-4 mt-8 text-black">
+      <button *ngFor="let i of [0,1,2,3]"
+              class="w-14 h-14 rounded-2xl mx-2 shadow-md transition-colors"
+              [ngClass]="{'bg-blue-500 text-white hover:bg-blue-600': i <= money,
+                         'bg-white text-gray-700 hover:bg-gray-100': i > money}"
+              (click)="money=i">
+        <i class="fa-solid fa-dollar-sign text-2xl"></i>
+      </button>
+    </div>
+  </div>
+
+  <h1 class="text-3xl font-bold text-center text-shadow my-5">How do you want to set preferences?</h1>
+  <app-error-box *ngIf="nextClicked&&!preferencesMethod">
+    Please select how do you want to set your preferences
+  </app-error-box>
+  <app-error-box *ngIf="nextClicked&&!rodoAccepted">
+    Please consent to your personal data being processed by PandPath
+  </app-error-box>
+
+  <div class="flex flex-wrap justify-center items-center">
+    <button *ngFor="let preference of PreferencesMethods"
+            class="w-28 h-28 p-2 bg-opacity-90 rounded-lg shadow-lg m-5 text-gray-700
+      hover:bg-opacity-100 hover:shadow-xl transition-colors"
+            [ngClass]="{'bg-gray-500': !hasSavedPreferences && preference==='Saved Preferences',
+            'bg-blue-500 text-white': preferencesMethod === preference,
+            'bg-white': preferencesMethod !== preference && !(preference=='Saved Preferences'&&!hasSavedPreferences)}"
+            [disabled]="!hasSavedPreferences && preference==='Saved Preferences'"
+            (click)="setPreferencesMethod(preference)">
+      <h3 class="text-lg font-semibold text-center ">{{ preference }}</h3>
+    </button>
+  </div>
+
+  <div class="bg-white bg-opacity-90 text-gray-700 flex rounded-xl p-3 align-items-top mb-5">
+    <button class="w-6 h-6 border-2 border-gray-700 mr-3 mt-1 bg-blue-500 transition-colors select-none"
+            [ngClass]="{'bg-opacity-0': !rodoAccepted}" (click)="rodoAccepted=!rodoAccepted"></button>
+    <span class="max-w-96">
+    I hereby consent to my personal data being processed by PandPath for the purpose of travel recommendation.
+      </span>
+  </div>
+</div>

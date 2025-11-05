@@ -1,0 +1,13 @@
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+.loader {
+  display: inline-block;
+  width: 82px;
+  height: 82px;
+  border: 8px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  animation: spinner 1s linear infinite;
+}

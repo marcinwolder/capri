@@ -1,0 +1,53 @@
+<div class="flex flex-col justify-center items-center">
+
+  <div class="p-4 mt-4 w-full">
+    <h2 class="text-3xl font-bold text-center text-shadow">Select your preferences</h2>
+    <div class="flex flex-wrap justify-center gap-2 mt-8">
+      <div *ngFor="let preference of preferences" class="p-2 flex font-semibold">
+        <button (click)="toggleSelected(preference)"
+                class="p-2 rounded-md transition-colors"
+                [ngClass]="{'bg-blue-500 text-white hover:bg-blue-600': preference.selected,
+                         'bg-white text-gray-700 hover:bg-gray-200': !preference.selected}">
+          {{ preference.name }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4 mt-4 w-full ">
+    <h2 class="text-3xl font-bold text-center text-shadow">Choose things you like</h2>
+    <div class="flex flex-wrap justify-center gap-2 mt-8">
+      <div *ngFor="let attraction of categories" class="p-2 flex font-semibold">
+        <button (click)="toggleSelected(attraction)"
+                class="p-2 rounded-md transition-colors"
+                [ngClass]="{'bg-blue-500 text-white hover:bg-blue-600': attraction.selected,
+                         'bg-white text-gray-700 hover:bg-gray-200': !attraction.selected}">
+          {{ attraction.name }}
+        </button>
+        <div *ngFor="let sub_attraction of attraction.subcategories" >
+          <button  *ngIf="attraction.selected"
+                  (click)="toggleSelected(sub_attraction)"
+                  class="p-2 rounded-md transition-colors mx-2"
+                  [ngClass]="{'bg-blue-500 text-white hover:bg-blue-600': sub_attraction.selected,
+                         'bg-white text-gray-700 hover:bg-gray-200': !sub_attraction.selected}">
+            {{ sub_attraction.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4 mt-4 w-full ">
+    <h2 class="text-3xl font-bold text-center text-shadow">Choose your favourite restaurant types</h2>
+    <div class="flex flex-wrap justify-center gap-2 mt-8">
+      <div *ngFor="let attraction of categories_restaurant" class="p-2 flex font-semibold">
+        <button (click)="toggleSelected(attraction)"
+                class="p-2 rounded-md transition-colors"
+                [ngClass]="{'bg-blue-500 text-white hover:bg-blue-600': attraction.selected,
+                         'bg-white text-gray-700 hover:bg-gray-200': !attraction.selected}">
+          {{ attraction.name }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

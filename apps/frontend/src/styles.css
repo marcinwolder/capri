@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import '@fortawesome/fontawesome-free/css/all.css';
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+.marker {
+  transform: perspective(40px) rotateX(20deg) rotateZ(-45deg);
+  transform-origin: 30% 50%;
+  border-radius: 50% 50% 50% 0;
+  padding: 0 3px 3px 0;
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -2.2em 0 0 -1.3em;
+  -webkit-box-shadow: -1px 1px 4px rgba(0, 0, 0, .5);
+  -moz-box-shadow: -1px 1px 4px rgba(0, 0, 0, .5);
+  box-shadow: -1px 1px 4px rgba(0, 0, 0, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker > * {
+  font-size: 1.7em;
+  color: #fff;
+  text-shadow: 0 0 1px #000;
+  transform: perspective(45px) rotateZ(45deg) rotateX(-20deg);
+  margin-top: 4px;
+}
+
+@media only screen and (min-device-width: 736px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}

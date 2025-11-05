@@ -1,0 +1,13 @@
+<footer class="z-20 w-screen p-3 bg-blue-950 bg-opacity-50 md:p-6 flex justify-between text-white">
+  <button class="border-2  p-1 px-4 rounded-full disabled:text-gray-600 disabled:border-gray-600
+            hover:bg-blue-900 transition-colors"
+          [disabled]="destinationService.isPreviousDisabled()"
+          (click)="destinationService.previous()">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
+
+  <button class="border-2 p-1 px-4 rounded-full hover:bg-blue-900 transition-colors"
+        (click)="destinationService.next()">
+    <i class="fa-solid fa-arrow-right"></i>
+  </button>
+</footer>

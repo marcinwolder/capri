@@ -1,0 +1,11 @@
+<div class="h-full flex items-center">
+<i *ngFor="let _ of stars; let i = index" class="fa-star p-1 hover:cursor-pointer select-none"
+   [ngClass]="{'fa-solid': i <= rating,
+      'fa-regular text-gray-400': i > rating,
+     'fa-regular': i > rating,
+     'text-yellow-400': i<=hoverIndex || i<= rating}"
+   (mouseenter)="setHover(i)"
+   (mouseleave)="clearHover()"
+   (click)="rate(i)">
+</i>
+</div>

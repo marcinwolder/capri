@@ -1,0 +1,40 @@
+<div class="flex flex-col justify-center items-center">
+  <div class="p-4 w-full">
+    <h1 class="text-3xl font-bold text-center text-shadow">Where do you want to go?</h1>
+
+    <app-error-box *ngIf="nextClicked">Please select a location!</app-error-box>
+
+    <div class="flex items-center border-2 rounded-full py-2 px-4 mt-8 bg-white">
+      <i class="fas fa-search text-gray-400"></i>
+      <input class="pl-2 outline-none w-full rounded-full text-black"
+             type="text" placeholder="Search by city or town"
+             [(ngModel)]="searchText" (input)="searchCities()" (focus)="onFocus()" (blur)="onBlur()">
+    </div>
+    <div class="absolute bg-white border-1 rounded-b-lg rounded-t-none shadow-lg ml-9 text-black">
+      <ul class="p-2" *ngIf="filteredCities.length  && isInputFocused">
+        <li class="pb-4 px-4 hover:bg-gray-200 cursor-pointer" (click)="select(item.city, item.country, item.id)"
+            *ngFor="let item of filteredCities; let i = index;">
+          <hr *ngIf="i !== 0">
+          <i class="fa-solid fa-location-dot mr-3 mt-4"></i>
+          {{ item.city }}, {{ item.country }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="p-4 mt-8 w-full">
+    <h2 class="text-2xl font-semibold text-center text-shadow">Popular destinations</h2>
+    <div class="flex flex-wrap justify-center gap-4 mt-4">
+      <div *ngFor="let city of popularCities"
+           class="w-40 h-40 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-56 xl:h-56 2xl:w-60 2xl:h-60
+                  bg-cover bg-center rounded-lg shadow-md flex flex-col"
+           [ngStyle]="{'background-image': 'url(' + city.img + ')'}">
+        <div
+          class="flex items-end h-full w-full bg-gray-900 bg-opacity-10 rounded-lg p-2 hover:bg-opacity-40 cursor-pointer"
+          (click)="select(city.name, city.country, city.id)">
+        </div>
+        <h3 class="text-white text-sm text-center bg-gray-900 bg-opacity-60">{{ city.name }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
