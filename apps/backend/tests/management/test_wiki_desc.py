@@ -1,0 +1,19 @@
+from src.api_calls import get_summary_wikipedia_api
+
+cities = ["Kraków", "Warszawa", "Wrocław", "Gdańsk", "Poznań", "Łódź", "Szczecin", "Bydgoszcz", "Lublin", "Katowice",
+          "Białystok", "Gdynia", "Częstochowa", "Radom", "Sosnowiec", "Toruń", "Kielce", "Rzeszów", "Gliwice", "Zabrze",
+          "Olsztyn", "Bielsko-Biała", "Bytom", "Zielona Góra", "Rybnik", "Ruda Śląska", "Opole", "Tychy", "Gorzów Wielkopolski",
+          "Dąbrowa Górnicza", "Elbląg", "Płock", "Wałbrzych", "Wałbrzych", "Chorzów", "Tarnów", "Zamość", "Koszalin",
+          "Legnica", "Kalisz", "Grudziądz", "Jaworzno", "Słupsk", "Jastrzębie-Zdrój", "Nowy Sącz", "Jelenia Góra",
+          "Siedlce", "Mysłowice", "Konin", "Piła", "Piotrków Trybunalski", "Inowrocław", "Lubin", "Ostrów Wielkopolski",
+          "Suwałki", "Gniezno", "Stargard", "Pruszków", "Wejherowo", "Legionowo", "Tarnobrzeg", "Piekary Śląskie",
+          "Starachowice", "Lubliniec", "Ostrołęka", "Mielec", "Świdnica", "Świętochłowice", "Zawiercie", "Otwock",
+          "Zduńska Wola", "Łomża", "Tomaszów Mazowiecki", "Bolesławiec", "Przemyśl", "Ełk", "Pruszcz Gdański",
+          "Piaseczno", "Śrem", "Skierniewice", "Kędzierzyn-Koźle", "Zgorzelec", "Sieradz", "Żary", "Mińsk Mazowiecki",
+          "Świdnik", "Wodzisław Śląski", "Oleśnica", "Kołobrzeg", "Kętrzyn", "Kościerzyna", "Krotoszyn", "Sandomierz"]
+def test_wiki_description():
+    with open('city_desc.txt', 'r', encoding='utf-8') as file:
+        desc = file.read()
+    place = "Kraków"
+    summary = get_summary_wikipedia_api(place)
+    assert summary == desc

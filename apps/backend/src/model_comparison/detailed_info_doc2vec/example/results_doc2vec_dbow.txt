@@ -1,0 +1,13 @@
+The model loading time: 6.55 seconds
+The result generation time: 0.35 seconds
+The most similar words to 'example':
+instance 0.8070241808891296
+examples 0.6955721974372864
+particular 0.6580987572669983
+possible 0.6157066226005554
+often 0.6151703000068665
+use 0.614302933216095
+type 0.6107200384140015
+common 0.609197735786438
+sometimes 0.5950855612754822
+certain 0.594578742980957

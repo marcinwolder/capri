@@ -1,0 +1,15 @@
+    fasttext-wiki-news-subwords-300: To model z serii fastText, który jest trenowany na danych z Wikipedii oraz wiadomościach. Używa subwordów (części słów) do lepszego radzenia sobie ze słowami spoza słownika (OOV - Out Of Vocabulary), posiada wektory o długości 300 wymiarów.
+
+    glove-twitter-25.model do glove-twitter-200.model: Modele GloVe (Global Vectors for Word Representation) trenowane na danych z Twittera. Liczba w nazwie wskazuje na liczbę wymiarów wektorów reprezentujących każde słowo. Im wyższy numer, tym model może być bardziej szczegółowy, ale też większy i wolniejszy w użyciu.
+
+    glove-wiki-gigaword-50.model do glove-wiki-gigaword-300.model: To również modele GloVe, ale trenowane na zestawie danych złożonym z Wikipedii oraz Gigaword, który jest dużym zbiorem tekstów z agencji informacyjnych. Liczba wymiarów, podobnie jak w przypadku modeli Twittera, oznacza dokładność reprezentacji.
+
+    GoogleNews-vectors-negative300.bin: Jest to model Word2Vec, trenowany na danych z Google News. Wektory mają 300 wymiarów, a 'negative' w nazwie odnosi się do metody Negative Sampling użytej podczas treningu modelu, co jest techniką optymalizacji.
+
+Rozmiar tych modeli może się znacznie różnić. Modele z większą liczbą wymiarów będą miały większy rozmiar pliku, ponieważ każde słowo jest reprezentowane przez większą liczbę wartości. Ponadto, im więcej różnych słów zawiera model, tym jest on większy.
+
+Słownictwo, czyli liczba różnych słów, które model jest w stanie rozpoznać, również będzie się różnić. Modele trenowane na większych zbiorach danych zazwyczaj będą miały bogatsze słownictwo.
+
+Jeśli chodzi o sortowanie modeli od najmniejszego do największego, zwykle będzie to zależało od liczby wymiarów wektorów oraz wielkości danych treningowych, ale nie mogę podać dokładnych wartości bez dodatkowych informacji na temat rozmiaru plików czy wielkości słownictwa dla każdego modelu.
+
+Aby uzyskać takie informacje, należałoby poszukać specyfikacji każdego z tych modeli lub sprawdzić ich rozmiar bezpośrednio w systemie plików, co aktualnie przekracza moje możliwości, ponieważ nie mam dostępu do internetu ani do plików systemowych.

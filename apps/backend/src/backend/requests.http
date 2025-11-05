@@ -1,0 +1,78 @@
+###
+POST http://127.0.0.1:5000/social_media
+Content-Type: application/json
+
+{
+
+}
+###
+POST http://127.0.0.1:5000/get_subcategories
+Content-Type: application/json
+
+{
+
+}
+###
+POST http://127.0.0.1:5001/get_place
+Content-Type: application/json
+
+{
+  "subcategories": ["museum", "park", "zoo", "church",
+                          "amusement_park", "aquarium", "art_gallery", "hindu_temple"]
+}
+
+
+
+###
+POST http://127.0.0.1:5000/post_json
+Content-Type: application/json
+
+{
+  "city": "Bhatinda",
+  "country": "India",
+  "days": 2,
+  "month": 7,
+  "money": 1000,
+  "categories": ["museum", "park", "zoo", "church"],
+  "city_id": 1356343054
+}
+###
+POST http://127.0.0.1:5000/post_json_test
+Content-Type: application/json
+
+{
+  "city": "KRAKOW",
+  "country": "Poland",
+  "days": 2,
+  "month": 7,
+  "money": 1000,
+  "categories": ["museum", "park", "zoo", "church"]
+}
+
+###
+POST http://127.0.0.1:5000/post_json_test
+Content-Type: application/json
+
+{
+  "city": "katowice",
+  "country": "Poland",
+  "days": 2,
+  "month": 7,
+  "money": 1000,
+  "categories": ["museum", "park", "zoo", "church"]
+}
+
+
+###
+GET https://maps.googleapis.com/maps/api/place/nearbysearch/json
+  ?keyword=Tokyo%20Disneyland
+  &location=35.6897%2C139.6922
+  &radius=20000
+  &key=AIzaSyDyjYUH0hSbRyZlhHi0HWAybomsnfXaHy8
+
+###
+# curl 'http://router.project-osrm.org/table/v2/car/13.388860,52.517037;13.397634,52.529407?annotations=duration'
+GET http://router.project-osrm.org/table/v1/foot/13.388860,52.517037;13.397634,52.529407?
+    annotations=duration
+###
+GET https://routing.openstreetmap.de/routed-foot/route/v1/driving/13.7807085453224,51.0536161;13.7835429,51.0515885?overview=false&geometries=polyline&steps=true

@@ -1,0 +1,23 @@
+"""
+
+
+Oparte na użytkownikach:
+
+Ten sposób rekomendacji opiera się na podobieństwie między użytkownikami.
+Jeśli użytkownik A ma podobne preferencje do użytkownika B, system może zarekomendować przedmioty, które użytkownik B lubiłby, ale których użytkownik A jeszcze nie widział.
+
+
+
+Oparte na elementach:
+
+W tym podejściu rekomendowane są przedmioty, które są podobne do tych, które użytkownik już polubił.
+Jeśli użytkownik A polubił film X, system może zarekomendować inne filmy, które są podobne do filmu X.
+
+
+Oparte na użytkownikach:
+Miara podobieństwa między user preferences
+
+Oparte na elementach:
+oparte na trip history, czyli jakie miejsca użytkownik odwiedził, jakie oceny wystawił, jakie miejsca ocenił jako must see, jakie miejsca ocenił jako nie chce odwiedzić
+oparte na ocenach innych użytkowników, którzy ocenili podobne miejsca
+"""

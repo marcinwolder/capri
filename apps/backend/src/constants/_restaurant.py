@@ -1,0 +1,78 @@
+dining = [
+    'american_restaurant',
+    'bar',
+    'barbecue_restaurant',
+    'brazilian_restaurant',
+    'breakfast_restaurant', 
+    'brunch_restaurant', 
+    'cafe', 
+    'chinese_restaurant',
+    'fast_food_restaurant',
+    'french_restaurant',
+    'greek_restaurant',
+    'hamburger_restaurant',
+    'ice_cream_shop',
+    'indian_restaurant',
+    'indonesian_restaurant',
+    'italian_restaurant',
+    'japanese_restaurant',
+    'korean_restaurant',
+    'lebanese_restaurant',
+    'mediterranean_restaurant',
+    'mexican_restaurant',
+    'middle_eastern_restaurant',
+    'pizza_restaurant',
+    'ramen_restaurant',
+    'restaurant',
+    'seafood_restaurant',
+    'spanish_restaurant',
+    'steak_house',
+    'sushi_restaurant',
+    'thai_restaurant',
+    'turkish_restaurant',
+    'vegan_restaurant', 
+    'vegetarian_restaurant', 
+    'vietnamese_restaurant',
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
