@@ -24,3 +24,4 @@ new_models/
 *.gz
 doc2vec
 *.db
+*.sqlite

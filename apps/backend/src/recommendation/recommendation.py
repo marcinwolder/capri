@@ -73,7 +73,7 @@ class Recommendation:
         clustered_places = splitForDays.split()
         print('clustered_places', clustered_places)
         path = get_path('clusters.html', 'outputs')
-        open_map(clustered_places, save_name=path)
+        # open_map(clustered_places, save_name=path)
 
         self.recommended_places = []
 
@@ -90,7 +90,7 @@ class Recommendation:
 
         print('summary', self.summary)
 
-        open_map(self.recommended_places, city=self.places.city)
+        # open_map(self.recommended_places, city=self.places.city)
         return self
 
     def check_if_outdoor(self, places: Places, day: int):
