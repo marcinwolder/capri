@@ -1,131 +1,159 @@
 PandaPath
 =========
 
-PandaPath is a travel planning platform that combines a Python/Flask backend and an Angular
-frontend to build personalized city itineraries. The backend connects to Google Places,
-weather forecasts, and Firebase to aggregate attractions, optimizes the route with
-OR-Tools, enriches each day with nearby restaurants, and produces a natural-language trip
-summary. The frontend guides travellers through preference selection, authentication, and
-itinerary review.
+PandaPath is a travel planning platform that combines a Python/Flask backend, an Angular
+frontend, and an optional self-hosted Llama-based summarization service to build
+personalized city itineraries. The backend fetches attractions from Google Places, weather
+providers, and Firebase, optimizes each day with OR-Tools, enriches stops with nearby
+dining, and produces a natural-language summary. The frontend guides travellers through
+preference collection, authentication, and itinerary review.
 
-Features
---------
-
-- Generates per-day attraction plans tailored to stated preferences and travel dates.
-- Scores places with statistical and collaborative models plus aspect-based sentiment.
-- Optimizes routes and day splits using OR-Tools with travel-time estimation.
-- Surfaces nearby dining options for scheduled meal times.
-- Persists user profiles and trip history in Firebase; secures routes with Firebase Auth.
-- Calls an external LLaMA-compatible service to narrate the itinerary summary.
-- Angular SPA with Tailwind styling and Firebase integration for user flows.
-
-Repository Layout
------------------
-
-- ``apps/backend`` – Flask API, recommendation engine, data/model layers, and tests.
-- ``apps/frontend`` – Angular application presented to travellers.
-- ``configs`` / ``docker`` / ``infra`` – placeholders for deployment artefacts.
-
-Backend Setup
--------------
-
-1. **Prerequisites**: Python 3.10+, pip, and access to Google Places & Firebase projects.
-2. **Environment**: create ``apps/backend/.env`` (or export variables) with:
-   - ``GOOGLE_PLACES_API_KEY`` – Google Places API key.
-   - ``PLACES_DB_API_CONFIG`` – JSON string with Firebase service account credentials for place data.
-   - ``USERS_DB_API_CONFIG`` – JSON string with Firebase service account credentials for user data.
-   - ``USER``, ``PASSWORD``, ``EMAIL`` – Twitter credentials for sentiment bootstrapping via ``twscrape``.
-3. **Install**:
-
-   ```bash
-   cd apps/backend
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows use .venv\Scripts\activate
-   pip install -r requirements.txt  # or: pip install -e .
-   ```
-
-4. **Run the API** (port 5000 by default):
-
-   ```bash
-   python -m src.backend.main [--debug] [--from_file] [--no_db]
-   ```
-
-   - ``--debug``: emit verbose logs and run quick recommendation sample.
-   - ``--from_file``: use cached attraction data from ``outputs``/``data`` instead of Google Places.
-   - ``--no_db``: operate without reading/writing Firebase.
-5. **Key endpoints** (all served under ``http://localhost:5000``):
-   - ``POST /api/recommendation/preferences`` – build itineraries from user profile, dates, and city.
-   - ``POST /get_with_text`` – infer preferences from free text and return a recommendation.
-   - ``GET /api/restaurants-nearby`` – nearby dining suggestions for a stopover.
-   - ``GET /api/trip-history`` / ``GET /api/trip-history/<trip_id>`` – fetch stored trips (Firebase token required).
-6. **Testing**:
-
-   ```bash
-   pytest
-   ```
-
-7. **Docs**: build Sphinx docs for the backend modules.
-
-   ```bash
-   cd apps/backend/docs
-   make html
-   ```
-
-LLaMA Summariser
+Key capabilities
 ----------------
 
-The class ``src/api_calls/llama.py`` expects a LLaMA-compatible chat completion endpoint
-at ``http://localhost:3001/v1/chat/completions``. Adjust ``Llama.API_URL`` or update the
-Angular ``environment`` configuration if you host the summariser elsewhere.
+- Preference-driven itineraries that consider dates, budget, accessibility, and trip length.
+- Route and day-part optimization powered by OR-Tools plus travel-time estimation models.
+- Aspect-based sentiment and NLP helpers to infer preferences from free text or Twitter.
+- Firebase-backed persistence for user profiles and trip history protected by Firebase Auth.
+- Optional LlamaGPT service exposed via an OpenAI-compatible API for trip narration.
 
-Frontend Setup
---------------
-
-1. **Prerequisites**: Node.js 18+, npm, and Angular CLI (``npm install -g @angular/cli``).
-2. **Install**:
-
-   ```bash
-   cd apps/frontend
-   npm install
-   ```
-
-3. **Environment**:
-   - Copy ``src/environments/environment.template`` to ``src/environments/environment.ts``.
-   - Fill in:
-     - ``backendHost`` – base URL of the Flask API (e.g. ``http://localhost:5000/``).
-     - ``llamaHost`` – base URL of the summarisation service (e.g. ``http://localhost:3001/``).
-     - ``firebase`` config – Firebase web app settings for authentication.
-     - ``googlePlacesAPIKey`` – used for client-side maps or autocomplete (if enabled).
-4. **Run the dev server**:
-
-   ```bash
-   npm start  # opens http://localhost:4200
-   ```
-
-5. **Angular tests**:
-
-   ```bash
-   npm test
-   ```
-
-Development Notes
+Repository layout
 -----------------
 
-- Restaurant clustering, weather integration, and collaborative filtering models persist
-  intermediate artefacts to ``apps/backend/outputs``; ensure the directory remains writable.
-- Some tests and utilities expect cached Google Places responses in ``apps/backend/outputs``;
-  populate them via ``python -m src.backend.main --from_file`` if working offline.
-- The repository contains ``uv.lock`` alongside ``pyproject.toml``; you can also manage the
-  backend dependencies with ``uv pip sync`` if you prefer Astral's ``uv`` tooling.
+- `apps/backend` – Flask API, recommendation engine, NLP, routing, database, and tests.
+- `apps/frontend` – Angular 16 single-page app under `src/app` with Tailwind styling.
+- `apps/llama` – Git submodule that hosts the LlamaGPT Docker stack used for summaries.
+- `configs/`, `docker/`, `infra/` – deployment and environment stubs.
+- `local/` – scratch instructions and experiments that should not ship.
+
+Cloning & submodules
+--------------------
+
+```bash
+git clone git@github.com:<org>/pandapath.git
+cd pandapath
+git submodule update --init --recursive apps/llama
+```
+
+Backend service (`apps/backend`)
+-------------------------------
+
+**Prerequisites**:
+
+- Python 3.10+
+- pip (or [uv](https://github.com/astral-sh/uv)) and virtualenv tooling
+- Credentials for Google Places, Firebase (two service accounts), and optional Twitter access for `twscrape`
+
+**Environment variables**:
+
+Copy `.env.example` to `.env` (or export the variables some other way) and fill in:
+
+- `GOOGLE_PLACES_API_KEY`
+- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts
+- `USER`, `PASSWORD`, `EMAIL` credentials if you plan to pull preferences from Twitter
+
+**Install dependencies**:
+
+```bash
+cd apps/backend
+# Option A: uv (recommended for repeatable installs)
+uv venv
+uv pip sync
+
+# Option B: pip
+python -m venv .venv
+.\.venv\Scripts\activate  # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Run the API (defaults to <http://localhost:5000>)**:
+
+```bash
+python -m src.backend.main [--debug] [--from_file] [--no_db]
+```
+
+- `--debug`: emit verbose logs and run a quick recommendation sample.
+- `--from_file`: reuse cached Google Places responses from `outputs/`.
+- `--no_db`: disable Firebase reads/writes (handy for local prototyping).
+
+**Key endpoints**:
+
+- `POST /api/recommendation/preferences` – build an itinerary from structured preferences.
+- `POST /get_with_text` – extract preferences from free text and return a recommendation.
+- `GET /api/restaurants-nearby` – look up dining options near a stop.
+- `GET /api/trip-history` / `GET /api/trip-history/<trip_id>` – fetch stored trips (Firebase token required).
+
+**Tests, lint, docs**:
+
+```bash
+python -m pytest tests
+python -m pytest --cov=src tests
+pylint src
+
+cd apps/backend/docs
+make html
+```
+
+Frontend client (`apps/frontend`)
+--------------------------------
+
+**Prerequisites**:
+
+- Node.js 18+
+- npm (Angular CLI is installed locally via `npm ci`)
+
+**Setup**:
+
+```bash
+cd apps/frontend
+npm ci
+cp src/environments/environment.template src/environments/environment.ts
+# edit backendHost, llamaHost, firebase config, and googlePlacesAPIKey
+```
+
+**Run and test**:
+
+```bash
+npm start          # serves http://localhost:4200
+npm run build      # production bundle
+npm test           # Karma unit tests
+```
+
+Llama summarization service (`apps/llama`)
+-----------------------------------------
+
+Trip summaries rely on an OpenAI-compatible chat completion endpoint. The `apps/llama`
+submodule vendors [getumbrel/llama-gpt](https://github.com/getumbrel/llama-gpt), which can
+run locally with Docker:
+
+```bash
+cd apps/llama
+./run.sh --model 7b          # add --with-cuda for Nvidia acceleration
+```
+
+- The API lives at `http://localhost:3001/v1/chat/completions`, matching `src/api_calls/llama.py`.
+- The optional UI runs at `http://localhost:3000`.
+- Update `apps/frontend/src/environments/*.ts` if you expose the service elsewhere.
+
+Development notes
+-----------------
+
+- Route optimization, weather helpers, and collaborative models persist cached artefacts in
+  `apps/backend/outputs`—keep the directory writable and version-control large blobs
+  elsewhere.
+- Some tests expect cached Google Places results; seed them by running
+  `python -m src.backend.main --from_file`.
+- A `uv.lock` file lives next to `pyproject.toml`; prefer `uv pip sync` to keep the Python
+  environment deterministic.
 
 Contributing
 ------------
 
-- Create feature branches and keep changes scoped to either ``apps/backend`` or ``apps/frontend`` when possible.
-- Run the relevant test suites before proposing changes.
-- Include updates to this README or the Sphinx docs when adding user-visible behaviour.
+- Scope branches to a single app when possible and include relevant README/docs updates.
+- Run the applicable test suites (and `npm run build` / `python -m pytest --cov=src tests`)
+  before opening a PR.
 
 License
 -------
 
-Project licensing has not been specified. Confirm terms with the maintainers before redistribution.
+Project licensing has not been specified yet. Confirm terms with the maintainers before redistribution.

@@ -1,6 +1,6 @@
 export const environment = {
-  backendHost: '',
-  llamaHost: '',
+  backendHost: 'http://127.0.0.1:5000/',
+  llamaHost: 'http://localhost:3001/',
   firebase: {
     apiKey: "",
     authDomain: "",
