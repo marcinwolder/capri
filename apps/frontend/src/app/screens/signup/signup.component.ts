@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import {Router} from "@angular/router";
-import {user} from "@angular/fire/auth";
-import {AuthService} from "../../services/auth.service";
+import { Router } from "@angular/router";
+import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: 'app-signup',
@@ -12,7 +9,7 @@ import {AuthService} from "../../services/auth.service";
 })
 export class SignupComponent {
   error?: string;
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) { }
 
   onSignup(value: any) {
     this.authService.createUserWithEmailAndPassword(value.email, value.password, value.name, value.surname, value.birthdate)
