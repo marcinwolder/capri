@@ -4,6 +4,7 @@ In this file you can find things that should be done in this project. It is not 
 
 - [TODO](#todo)
   - [Backend](#backend)
+  - [Frontend](#frontend)
   - [Cloud](#cloud)
   - [Project](#project)
 
@@ -67,6 +68,15 @@ In this file you can find things that should be done in this project. It is not 
   - **Why is it bad**: Development servers are unstable and can be buggy sometimes.
   - **Proposed solution**: We should change the entrypoint for the server to use a production-ready server.
 
+## Frontend
+
+- [ ] Frontend should be presented to user as desktop application
+
+  - **Source**: `apps/frontend/.`
+  - **What is wrong**: Currently frontend is a web application. Based on Product Owner requirements there is a need of developing a desktop app.
+  - **Why is it bad**: -
+  - **Proposed solution**: Use Electron to transform Angular app into desktop app.
+
 ## Cloud
 
 - [ ] No documentation for the cloud part of the project
@@ -98,3 +108,11 @@ In this file you can find things that should be done in this project. It is not 
   - **What is wrong**: There is no Dockerfile. Every component needs to be launched separately.
   - **Why is it bad**: Setting up a system with so many components is time consuming.
   - **Proposed solution**: Create `Dockerfile` and `docker-compose.yml` to set up and deploy the whole system.
+
+---
+
+- [ ] Add POI models from other project
+
+  - **What is wrong**: There is a second part of the project including some POI algorithms.
+  - **Why is it bad**: We are currently not using very detailed algorithm that is in the second project making the recommendations worse.
+  - **Proposed solution**: Add algorithm from second project.
