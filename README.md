@@ -100,13 +100,13 @@ Frontend client (`apps/frontend`)
 **Prerequisites**:
 
 - Node.js 18+
-- npm (Angular CLI is installed locally via `npm ci`)
+- Yarn 1.x (preferred) or npm (Angular CLI is installed locally either way)
 
 **Setup**:
 
 ```bash
 cd apps/frontend
-npm ci
+yarn install   # or npm ci
 cp src/environments/environment.template src/environments/environment.ts
 # edit backendHost, llamaHost, firebase config, and googlePlacesAPIKey
 ```
@@ -114,9 +114,11 @@ cp src/environments/environment.template src/environments/environment.ts
 **Run and test**:
 
 ```bash
-npm start          # serves http://localhost:4200
-npm run build      # production bundle
-npm test           # Karma unit tests
+yarn start            # serves http://localhost:4200
+yarn build            # production bundle
+yarn test             # Karma unit tests
+yarn electron:serve   # launch Electron shell against ng serve
+yarn electron:build   # generate desktop installers in release/
 ```
 
 Llama summarization service (`apps/llama`)

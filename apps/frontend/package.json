@@ -1,12 +1,16 @@
 {
   "name": "ta",
   "version": "0.0.0",
+  "main": "electron/main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "electron:dev": "wait-on http://localhost:4200 && cross-env ELECTRON_START_URL=http://localhost:4200 electron ./electron/main.js",
+    "electron:serve": "concurrently -k \"yarn ng serve\" \"yarn electron:dev\"",
+    "electron:build": "yarn build && electron-builder"
   },
   "private": true,
   "dependencies": {
@@ -33,6 +37,10 @@
     "@angular/compiler-cli": "^16.2.12",
     "@types/jasmine": "~4.3.0",
     "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^30.0.9",
+    "electron-builder": "^24.6.4",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -41,6 +49,41 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.3",
-    "typescript": "~5.1.6"
+    "typescript": "~5.1.6",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.pandapath.ta",
+    "productName": "PandaPath",
+    "files": [
+      "dist/ta/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "electron/resources"
+    },
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.travel",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ]
+    }
   }
 }
