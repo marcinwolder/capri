@@ -1,4 +1,4 @@
-:host /deep/ router-outlet + * {
+:host ::ng-deep router-outlet + * {
   flex-grow: 1;
   overflow: auto;
 }

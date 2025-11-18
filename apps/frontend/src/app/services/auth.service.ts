@@ -6,6 +6,7 @@ import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {User} from "../data-model/user";
 import {getAuth, linkWithPopup, signInWithPopup} from "@angular/fire/auth";
 import {doc, getDoc} from "@angular/fire/firestore";
+import firebase from "firebase/compat/app";
 
 @Injectable({
   providedIn: 'root'
@@ -58,16 +59,41 @@ export class AuthService {
     return await this.afAuth.signInWithEmailAndPassword(email, password);
   }
 
-  public async signInWithGoogle() {
-    return await this.afAuth.signInWithPopup(new GoogleAuthProvider())
-      .then(async res => {
-        const name = res.user!.displayName?.split(' ')[0] || '';
-        const surname = res.user!.displayName?.split(' ')[1] || '';
-        await this.createUser(res.user!.uid, name, surname);
-        return res;
-      });
+  /**
+   * Use popup by default; fall back to redirect when popups are blocked (Electron).
+   */
+  public async signInWithGoogle(): Promise<firebase.auth.UserCredential | void> {
+    const provider = new GoogleAuthProvider();
+
+    if (this.isDesktopApp()) {
+      await this.afAuth.signInWithRedirect(provider);
+      return;
+    }
+
+    try {
+      const res = await this.afAuth.signInWithPopup(provider);
+      await this.createUserFromCredential(res);
+      return res;
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-blocked' || err?.code === 'auth/popup-closed-by-user') {
+        await this.afAuth.signInWithRedirect(provider);
+        return;
+      }
+      throw err;
+    }
   }
 
+  /**
+   * Complete redirect flow after returning from provider.
+   */
+  public async handleGoogleRedirect(): Promise<firebase.auth.UserCredential | null> {
+    const res = await this.afAuth.getRedirectResult();
+    if (res?.user) {
+      await this.createUserFromCredential(res);
+      return res;
+    }
+    return null;
+  }
 
   public async createUserWithEmailAndPassword(email: string, password: string,
                                               name?: string, surname?: string, birthdate?: string) {
@@ -96,6 +122,16 @@ export class AuthService {
         }
       );
     }
+  }
+
+  private async createUserFromCredential(res: firebase.auth.UserCredential) {
+    const name = res.user!.displayName?.split(' ')[0] || '';
+    const surname = res.user!.displayName?.split(' ')[1] || '';
+    await this.createUser(res.user!.uid, name, surname);
+  }
+
+  private isDesktopApp(): boolean {
+    return typeof window !== 'undefined' && !!(window as any).desktopApp?.isDesktop;
   }
 
   public async linkTwitterAccount(): Promise<string> {

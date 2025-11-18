@@ -38,7 +38,6 @@ module.exports = {
         { values: theme('textShadow') }
       );
     }),
-    require('@tailwindcss/line-clamp'),
 ],
   future: {
     hoverOnlyWhenSupported: true,
