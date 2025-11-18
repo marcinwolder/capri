@@ -130,7 +130,7 @@ export class AuthService {
     await this.createUser(res.user!.uid, name, surname);
   }
 
-  private isDesktopApp(): boolean {
+  public isDesktopApp(): boolean {
     return typeof window !== 'undefined' && !!(window as any).desktopApp?.isDesktop;
   }
 

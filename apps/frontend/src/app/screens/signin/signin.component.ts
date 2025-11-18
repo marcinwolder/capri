@@ -10,6 +10,7 @@ import {AuthService} from "../../services/auth.service";
 })
 export class SigninComponent implements OnInit {
   error?: string;
+  isDesktopApp = this.authService.isDesktopApp();
   constructor(private authService: AuthService, private router: Router) {}
 
   async ngOnInit() {
