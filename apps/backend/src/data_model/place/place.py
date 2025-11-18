@@ -1,4 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+
+from collections.abc import Iterable
 
 from dataclasses import dataclass, field
 
@@ -102,7 +104,7 @@ class Place:
 		}
 
 
-class PlaceCreator(ABC):
+class PlaceCreator:
 	"""Abstract class for creating Place object.
 
 	Attributes:
@@ -124,7 +126,10 @@ class PlaceCreator(ABC):
 			Location(**self.data['location']) if 'location' in self.data else Location()
 		)
 
-		if 'regularOpeningHours' in self.data:
+		if (
+			'regularOpeningHours' in self.data
+			and 'periods' in self.data['regularOpeningHours']
+		):
 			place.regularOpeningHours = RegularOpeningHours(
 				periods=self.data['regularOpeningHours']['periods'],
 				weekdayDescriptions=self.data['regularOpeningHours'][

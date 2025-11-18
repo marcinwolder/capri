@@ -2,16 +2,8 @@ import spacy
 
 from src.nlp_operations._absa import get_sentiment_data
 from src.nlp_operations.gensim_similarity import get_similarity3, get_subcategories
-from src.nlp_operations.ner import get_ner
-from src.nlp_operations.pipelines import pipelines_ner
 from src.nlp_operations.translation import detect_language, translate
 from src.nlp_operations.utils import divide_text_to_sentences, process_sentiment_data
-
-
-def _ner(text):
-	lang = detect_language(text)
-	ne = get_ner(text, pipelines_ner[lang[0]['label']])
-	return ne
 
 
 class AspectBasedSentimentAnalyzer:
@@ -19,12 +11,6 @@ class AspectBasedSentimentAnalyzer:
 
 	def __init__(self):
 		self.nlp = spacy.load('en_core_web_sm')
-		# self.gensim_model = KeyedVectors.load_word2vec_format(
-		#     # '../new_models/word2vec-google-news-300.model'
-		#     "../../new_models/GoogleNews-vectors-negative300.bin",
-		#     binary=True,
-		#     # '../../fasttext-wiki-news-subwords-300'
-		# )  # TODO: to działa?
 
 	def get_preferences_from_text_data(self, text):
 		"""1. wyciagniecie aspektow z tekstu

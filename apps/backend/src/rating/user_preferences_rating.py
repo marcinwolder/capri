@@ -1,7 +1,12 @@
 from src.data_model.place.place import Place
 
-from src.data_model.place.place_subclasses import *
-
+from src.data_model.place.place_subclasses import (
+	AccessibilityOptions,
+	Alcohol,
+	Children,
+	Dining,
+	PlaceInfo,
+)
 from src.data_model.user.user_preferences import UserPreferences
 
 
@@ -56,42 +61,43 @@ class UserPreferencesRating:
 				alcohol.servesBeer, alcohol.servesWine, alcohol.servesCocktails
 			)
 
-		return -1
+		return -1.0
 
-	def dining_rating(self, restaurant: Dining):
-		if self.user_preferences.dining:
-			return _arguments_rating(
-				restaurant.goodForWatchingSports,
-				restaurant.reservable,
-				restaurant.takeout,
-				restaurant.dineIn,
-				restaurant.delivery,
-				restaurant.outdoorSeating,
-				restaurant.servesBreakfast,
-				restaurant.servesLunch,
-				restaurant.servesDinner,
-				restaurant.servesBrunch,
-				restaurant.outdoorSeating,
-				restaurant.servesDessert,
-				restaurant.servesCoffee,
-			)
+	def dining_rating(self, restaurant: Dining) -> float:
+		# FIXME: 18.11.2025 - This is not right. There is no dining attr in UserPreferences. This function is not used anyways. ~Folder
+		# if self.user_preferences.dining:
+		# 	return _arguments_rating(
+		# 		restaurant.goodForWatchingSports,
+		# 		restaurant.reservable,
+		# 		restaurant.takeout,
+		# 		restaurant.dineIn,
+		# 		restaurant.delivery,
+		# 		restaurant.outdoorSeating,
+		# 		restaurant.servesBreakfast,
+		# 		restaurant.servesLunch,
+		# 		restaurant.servesDinner,
+		# 		restaurant.servesBrunch,
+		# 		restaurant.outdoorSeating,
+		# 		restaurant.servesDessert,
+		# 		restaurant.servesCoffee,
+		# 	)
 
-		return -1
+		return -1.0
 
 	def children_rating(self, children: Children):
 		if self.user_preferences.children:
 			return _arguments_rating(children.goodForChildren, children.menuForChildren)
 
-		return -1
+		return -1.0
 
 	def servesVegetarianFood_rating(self, servesVegetarianFood: bool):
-		if self.user_preferences.servesVegetarianFood:
+		if self.user_preferences.serves_vegetarian_food:
 			return int(servesVegetarianFood)
 
-		return -1
+		return -1.0
 
 	def accessibilityOptions_rating(self, accessibilityOptions: AccessibilityOptions):
-		if self.user_preferences.accessibilityOptions:
+		if self.user_preferences.accessibility_options:
 			return _arguments_rating(
 				accessibilityOptions.wheelchairAccessibleParking,
 				accessibilityOptions.wheelchairAccessibleSeating,
@@ -99,37 +105,37 @@ class UserPreferencesRating:
 				accessibilityOptions.wheelchairAccessibleRestroom,
 			)
 
-		return -1
+		return -1.0
 
 	def allowsDogs_rating(self, allowsDogs: bool):
-		if self.user_preferences.allowsDogs:
-			return int(allowsDogs)
+		if self.user_preferences.allows_dogs:
+			return float(allowsDogs)
 
-		return -1
+		return -1.0
 
-	def priceLevel_rating(self, priceLevel: int):
+	def priceLevel_rating(self, priceLevel: int) -> float:
 		if self.user_preferences.price_level >= priceLevel:
-			return 1
+			return 1.0
 
-		return 0
+		return 0.0
 
-	def goodForGroups_rating(self, goodForGroups: bool):
-		if self.user_preferences.goodForGroups:
-			return int(goodForGroups)
+	def goodForGroups_rating(self, goodForGroups: bool) -> float:
+		if self.user_preferences.good_for_groups:
+			return float(goodForGroups)
 
-		return -1
+		return -1.0
 
 
 def debug():
 	user_needs = UserPreferences(
-		[],
 		5,
 		['museum', 'park'],
 		{'museum': ['Art', 'History'], 'park': []},
+		[],
 	)
 
 	place = Place(
-		placeInfo={'id': '1'},
+		placeInfo=PlaceInfo(id='1'),
 		types=['museum', 'park'],
 		subcategories=['Art', 'History'],
 		accessibilityOptions=AccessibilityOptions(),

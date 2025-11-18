@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Literal, TypeAlias
 
 Need: TypeAlias = Literal[
@@ -16,39 +16,33 @@ Need: TypeAlias = Literal[
 class UserPreferences:
 	"""User preferences data model."""
 
-	priceLevel: int
-	accessibilityOptions: bool
-	goodForGroups: bool
-
-	servesVegetarianFood: bool
-	children: bool
-	alcohol: bool
-	allowsDogs: bool
+	price_level: int
 	categories: list[str]
-
 	subcategories: dict[str, list[str]]
 	restaurant_categories: list[str]
 
-	def __init__(
+	needs: InitVar[list[Need] | None] = None
+
+	accessibility_options: bool = False
+	good_for_groups: bool = False
+	serves_vegetarian_food: bool = False
+	children: bool = False
+	alcohol: bool = False
+	allows_dogs: bool = False
+
+	def __post_init__(
 		self,
-		needs: list[Need],
-		priceLevel: int,
-		categories: list[str],
-		subcategories: dict[str, list[str]],
+		needs: list[Need] | None,
 	):
-		self.price_level: int = priceLevel
+		needs_list: list[Need] = [] if needs is None else needs
+		self.accessibility_options: bool = 'wheelchairAccessible' in needs_list
+		self.good_for_groups: bool = 'goodForGroups' in needs_list
 
-		self.accessibility_options: bool = 'wheelchairAccessible' in needs
-		self.good_for_groups: bool = 'goodForGroups' in needs
-
-		self.serves_vegetarian_food: bool = 'vegan' in needs
-		self.children: bool = 'children' in needs
-		self.alcohol: bool = 'alcohol' in needs
-		self.allows_dogs: bool = 'allowsDogs' in needs
-		self.categories: list[str] = categories
-		self.subcategories: dict[str, list[str]] = subcategories
+		self.serves_vegetarian_food: bool = 'vegan' in needs_list
+		self.children: bool = 'children' in needs_list
+		self.alcohol: bool = 'alcohol' in needs_list
+		self.allows_dogs: bool = 'allowsDogs' in needs_list
 		self._handle_places_of_worship()
-		self.restaurant_categories: list[str] = []
 
 	def _handle_places_of_worship(self):
 		"""Handle places of worship."""
@@ -82,7 +76,7 @@ class UserPreferences:
 		return {
 			'priceLevel': self.price_level,
 			'wheelchairAccessible': self.accessibility_options,
-			'goodForGroups': self.good_for_groups,
+			'good_for_groups': self.good_for_groups,
 			'vegan': self.serves_vegetarian_food,
 			'children': self.children,
 			'alcohol': self.alcohol,

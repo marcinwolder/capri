@@ -30,7 +30,7 @@ def get_travel_data():
 		)
 		transport = 'foot' if distance <= 5 else 'car'
 		osm = travel_estimator.get_travel_time(
-			place.location, place2.location, transport=transport
+			place.location, place2.location
 		)
 		data.append(
 			{

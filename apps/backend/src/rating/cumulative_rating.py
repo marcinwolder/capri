@@ -8,7 +8,7 @@ from src.rating.user_preferences_rating import UserPreferencesRating
 def calculate_cumulative_rating(places: Places, user_needs: UserPreferences):
 	"""Calculates cumulative rating for each place in the list"""
 	user_preferences_rating = UserPreferencesRating(user_needs)
-	for key, attraction in places.places.items():
+	for _, attraction in places.places.items():
 		rating = _calculate_cumulative_rating(
 			attraction, user_preferences_rating=user_preferences_rating
 		)
@@ -81,11 +81,15 @@ def _calculate_cumulative_rating(place, user_preferences_rating) -> float:
 	return cumulative_rating
 
 
-def calculate_rating_for_restaurant(restaurant: Place, user_preferences_rating):
+def calculate_rating_for_restaurant(
+	restaurant: Place, user_preferences_rating: UserPreferencesRating
+):
 	"""Calculates rating for a restaurant based on its attributes."""
-	restaurant = user_preferences_rating.dining_rating(restaurant.dining)
-	if restaurant == -1:
-		restaurant = user_preferences_rating.priceLevel_rating(restaurant.priceLevel)
+	restaurant_rating = user_preferences_rating.dining_rating(restaurant.dining)
+	if restaurant_rating == -1:
+		restaurant_rating = user_preferences_rating.priceLevel_rating(
+			restaurant.priceLevel
+		)
 		rating = restaurant.ratings.confidenceRating
 		lst = [restaurant, rating]
 	else:

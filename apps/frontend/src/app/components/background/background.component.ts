@@ -12,7 +12,7 @@ export class BackgroundComponent implements OnInit{
   path = '';
 
   ngOnInit(): void {
-    this.path = `url('../../../assets/images/backgrounds/${this.image}')`
+    this.path = `url('assets/images/backgrounds/${this.image}')`
   }
 
 

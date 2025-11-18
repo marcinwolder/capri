@@ -31,7 +31,7 @@ def _make_place():
 
 class TestUserNeedsRating(unittest.TestCase):
 	def setUp(self):
-		self.userPreferences = UserPreferences([], 5, [], {})
+		self.userPreferences = UserPreferences(5, [], {}, [])
 		self.user_preferences_rating = UserPreferencesRating(self.userPreferences)
 		self.place = _make_place()
 
@@ -195,7 +195,7 @@ class TestUserNeedsRatingAllNeeds(unittest.TestCase):
 
 class TestUserPreferencesRatingNoCategories(unittest.TestCase):
 	def setUp(self):
-		self.user_preferences = UserPreferences([], 5, [], {})
+		self.user_preferences = UserPreferences(5, [], {}, [])
 		self.user_preferences_rating = UserPreferencesRating(self.user_preferences)
 		self.place = _make_place()
 
