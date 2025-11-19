@@ -49,8 +49,10 @@ Backend service (`apps/backend`)
 Copy `.env.example` to `.env` (or export the variables some other way) and fill in:
 
 - `GOOGLE_PLACES_API_KEY`
-- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts
+- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts (or point `PLACES_DB_API_CONFIG_FILE` / `USERS_DB_API_CONFIG_FILE` to the JSON files)
 - `USER`, `PASSWORD`, `EMAIL` credentials if you plan to pull preferences from Twitter
+
+When running through Docker Compose, drop the two Firebase service-account JSON files inside `apps/backend/` and keep them out of Git. The stack mounts them as Docker secrets and injects `PLACES_DB_API_CONFIG_FILE=/run/secrets/firebase_places_sa` and `USERS_DB_API_CONFIG_FILE=/run/secrets/firebase_users_sa`, so you never need to paste the raw JSON into `.env`.
 
 **Install dependencies**:
 

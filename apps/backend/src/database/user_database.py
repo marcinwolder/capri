@@ -19,9 +19,39 @@ load_dotenv()
 class DataBaseUsers:
 	"""Class that handles the connection to the database_module."""
 
+	@staticmethod
+	def _load_service_account(env_name: str, file_env_name: str):
+		"""Load a Firebase service account config from a JSON string or file."""
+		file_path = os.getenv(file_env_name)
+		if file_path:
+			try:
+				with open(file_path, 'r', encoding='utf-8') as file:
+					return json.load(file)
+			except FileNotFoundError as exc:
+				raise ValueError(
+					f'{file_env_name} points to a missing file: {file_path}'
+				) from exc
+			except json.JSONDecodeError as exc:
+				raise ValueError(
+					f'{file_env_name} does not point to valid JSON: {file_path}'
+				) from exc
+
+		json_blob = os.getenv(env_name)
+		if json_blob:
+			try:
+				return json.loads(json_blob)
+			except json.JSONDecodeError as exc:
+				raise ValueError(f'{env_name} is not valid JSON data.') from exc
+
+		raise ValueError(
+			f'Set either {env_name} or {file_env_name} to a Firebase service account.'
+		)
+
 	def __init__(self):
-		assert os.getenv('USERS_DB_API_CONFIG')
-		cred = credentials.Certificate(json.loads(os.getenv('USERS_DB_API_CONFIG', '')))
+		config = self._load_service_account(
+			'USERS_DB_API_CONFIG', 'USERS_DB_API_CONFIG_FILE'
+		)
+		cred = credentials.Certificate(config)
 		self.app = initialize_app(cred, name='USERS')
 		self.db = firestore.client(self.app)
 

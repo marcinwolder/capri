@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    env_file:
+      - apps/backend/.env
+    environment:
+      PLACES_DB_API_CONFIG_FILE: /run/secrets/firebase_places_sa
+      USERS_DB_API_CONFIG_FILE: /run/secrets/firebase_users_sa
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    secrets:
+      - firebase_places_sa
+      - firebase_users_sa
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import socket; socket.create_connection(('localhost', 5000), 3)"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  llama:
+    image: ghcr.io/abetlen/llama-cpp-python:latest@sha256:b6d21ff8c4d9baad65e1fa741a0f8c898d68735fff3f3cd777e3f0c6a1839dd4
+    command: "/bin/sh /api/run.sh"
+    restart: unless-stopped
+    environment:
+      MODEL: /models/llama-2-7b-chat.bin
+      MODEL_DOWNLOAD_URL: https://huggingface.co/TheBloke/Nous-Hermes-Llama-2-7B-GGML/resolve/main/nous-hermes-llama-2-7b.ggmlv3.q4_0.bin
+      N_GQA: 1
+      USE_MLOCK: 1
+    volumes:
+      - ./apps/llama/models:/models
+      - ./apps/llama/api:/api
+    ports:
+      - "3001:8000"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import socket; socket.create_connection(('localhost', 8000), 3)"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+secrets:
+  firebase_places_sa:
+    file: ./apps/backend/pandapath-places-firebase-adminsdk-fbsvc-9c55f9e23a.json
+  firebase_users_sa:
+    file: ./apps/backend/pandapath-users-firebase-adminsdk-fbsvc-904023fff7.json

@@ -14,7 +14,9 @@ from src.data_model import UserPreferences
 from src.database import DataBase, DataBaseUsers
 
 app = Flask(__name__)
-CORS(app, resources={r'/api/*': {'origins': 'http://localhost:4200'}})
+# Allow Angular dev server plus Electron's ephemeral 127.0.0.1:<random-port> origin.
+ALLOWED_ORIGINS = ['http://localhost:4200', r'http://127\.0\.0\.1:\d+']
+CORS(app, resources={r'/api/*': {'origins': ALLOWED_ORIGINS}})
 
 db = DataBase()
 db_users = DataBaseUsers()
@@ -56,7 +58,10 @@ def trip_details(trip_id: str):
 
 
 @app.route('/api/recommendation/preferences', methods=['POST'])
-@cross_origin(origins='localhost', allow_headers=['Content-Type', 'Authorization'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
 def get_with_categories():
 	"""Check if loc exist in firebase db"""
 	data = request.json
@@ -196,4 +201,4 @@ def get_place_photo(name: str):
 
 
 if __name__ == '__main__':
-	app.run(port=5000)
+	app.run(host='0.0.0.0', port=5000)

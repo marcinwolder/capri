@@ -27,10 +27,41 @@ class DataBase:
 		self._categories = default_categories
 		self._dining = dining
 
+	@staticmethod
+	def _load_service_account(env_name: str, file_env_name: str):
+		"""Load a Firebase service account config from a JSON string or file."""
+		file_path = os.getenv(file_env_name)
+		if file_path:
+			try:
+				with open(file_path, 'r', encoding='utf-8') as file:
+					return json.load(file)
+			except FileNotFoundError as exc:
+				raise ValueError(
+					f'{file_env_name} points to a missing file: {file_path}'
+				) from exc
+			except json.JSONDecodeError as exc:
+				raise ValueError(
+					f'{file_env_name} does not point to valid JSON: {file_path}'
+				) from exc
+
+		json_blob = os.getenv(env_name)
+		if json_blob:
+			try:
+				return json.loads(json_blob)
+			except json.JSONDecodeError as exc:
+				raise ValueError(f'{env_name} is not valid JSON data.') from exc
+
+		raise ValueError(
+			f'Set either {env_name} or {file_env_name} to a Firebase service account.'
+		)
+
 	@classmethod
 	def _init_client(cls):
 		"""Function that initializes the connection to the database_module."""
-		cred = credentials.Certificate(json.loads(os.getenv('PLACES_DB_API_CONFIG')))
+		config = cls._load_service_account(
+			'PLACES_DB_API_CONFIG', 'PLACES_DB_API_CONFIG_FILE'
+		)
+		cred = credentials.Certificate(config)
 		cls.app = firebase_admin.initialize_app(cred, name='PLACES')
 		cls.db = firestore.client(cls.app)
 
