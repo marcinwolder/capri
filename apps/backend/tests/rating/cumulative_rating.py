@@ -6,20 +6,27 @@ from src.rating.user_preferences_rating import UserPreferencesRating
 
 
 def _make_user_preferences_rating():
-    user = UserPreferences(['wheelchair_accessible', 'outdoor', 'vegan', 'children'],
-                           5, ['museum', 'park'], {'museum': ['Art', 'History'], 'park': []}
-                           )
-    return user
+	user = UserPreferences(
+		['wheelchair_accessible', 'outdoor', 'vegan', 'children'],
+		5,
+		['museum', 'park'],
+		{'museum': ['Art', 'History'], 'park': []},
+	)
+	return user
+
 
 def _make_place():
-    return Place(placeInfo={'id': '1'},
-                 types=['museum', 'park'],
-                 subcategories=['Art', 'History'],
-                 accessibilityOptions=AccessibilityOptions(),
-                 )
+	return Place(
+		placeInfo={'id': '1'},
+		types=['museum', 'park'],
+		subcategories=['Art', 'History'],
+		accessibilityOptions=AccessibilityOptions(),
+	)
+
+
 def test_confidence_rating_4():
-    user_preferences_rating = UserPreferencesRating(_make_user_preferences_rating())
-    place = _make_place()
-    rating = _calculate_cumulative_rating(place, user_preferences_rating)
-    print(rating)
-    assert rating == 1
+	user_preferences_rating = UserPreferencesRating(_make_user_preferences_rating())
+	place = _make_place()
+	rating = _calculate_cumulative_rating(place, user_preferences_rating)
+	print(rating)
+	assert rating == 1

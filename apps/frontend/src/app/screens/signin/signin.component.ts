@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import {Router} from "@angular/router";
 import {AuthService} from "../../services/auth.service";
@@ -8,9 +8,21 @@ import {AuthService} from "../../services/auth.service";
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.css']
 })
-export class SigninComponent {
+export class SigninComponent implements OnInit {
   error?: string;
+  isDesktopApp = this.authService.isDesktopApp();
   constructor(private authService: AuthService, private router: Router) {}
+
+  async ngOnInit() {
+    try {
+      const res = await this.authService.handleGoogleRedirect();
+      if (res?.user) {
+        this.router.navigate(['/selection']);
+      }
+    } catch (err: any) {
+      this.error = err.message?.replace('Firebase: ', '');
+    }
+  }
 
   onSignIn(value: { email: string; password: string }) {
     this.authService.signInWithEmailAndPassword(value.email, value.password)

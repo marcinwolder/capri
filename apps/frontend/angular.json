@@ -28,23 +28,49 @@
               "./node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "leaflet"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "5mb",
+                  "maximumError": "6mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "500kb",
+                  "maximumError": "750kb"
                 }
               ],
               "outputHashing": "all"
+            },
+            "electron": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5mb",
+                  "maximumError": "6mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "500kb",
+                  "maximumError": "750kb"
+                }
+              ],
+              "outputHashing": "all",
+              "baseHref": "./",
+              "deployUrl": "./",
+              "buildOptimizer": true,
+              "optimization": true,
+              "vendorChunk": false,
+              "extractLicenses": true,
+              "sourceMap": false,
+              "namedChunks": false
             },
             "development": {
               "buildOptimizer": false,

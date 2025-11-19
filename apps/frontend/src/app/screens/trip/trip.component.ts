@@ -54,8 +54,10 @@ export class TripComponent implements OnInit{
   city_id?: string;
 
   getImageUrl(place: Place): string {
-    return `https://places.googleapis.com/v1/${place.image.name}/media?maxHeightPx=400&maxWidthPx=400&key=` +
-      environment.googlePlacesAPIKey;
+    const backendHost = environment.backendHost.endsWith('/')
+      ? environment.backendHost.slice(0, -1)
+      : environment.backendHost;
+    return `${backendHost}/api/places/photos/${place.image.name}?maxHeightPx=400&maxWidthPx=400`;
   }
 
   getWeatherIcon(weather: number): string {

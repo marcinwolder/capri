@@ -49,8 +49,10 @@ Backend service (`apps/backend`)
 Copy `.env.example` to `.env` (or export the variables some other way) and fill in:
 
 - `GOOGLE_PLACES_API_KEY`
-- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts
+- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts (or point `PLACES_DB_API_CONFIG_FILE` / `USERS_DB_API_CONFIG_FILE` to the JSON files)
 - `USER`, `PASSWORD`, `EMAIL` credentials if you plan to pull preferences from Twitter
+
+When running through Docker Compose, drop the two Firebase service-account JSON files inside `apps/backend/` and keep them out of Git. The stack mounts them as Docker secrets and injects `PLACES_DB_API_CONFIG_FILE=/run/secrets/firebase_places_sa` and `USERS_DB_API_CONFIG_FILE=/run/secrets/firebase_users_sa`, so you never need to paste the raw JSON into `.env`.
 
 **Install dependencies**:
 
@@ -100,13 +102,13 @@ Frontend client (`apps/frontend`)
 **Prerequisites**:
 
 - Node.js 18+
-- npm (Angular CLI is installed locally via `npm ci`)
+- Yarn 1.x (preferred) or npm (Angular CLI is installed locally either way)
 
 **Setup**:
 
 ```bash
 cd apps/frontend
-npm ci
+yarn install   # or npm ci
 cp src/environments/environment.template src/environments/environment.ts
 # edit backendHost, llamaHost, firebase config, and googlePlacesAPIKey
 ```
@@ -114,9 +116,11 @@ cp src/environments/environment.template src/environments/environment.ts
 **Run and test**:
 
 ```bash
-npm start          # serves http://localhost:4200
-npm run build      # production bundle
-npm test           # Karma unit tests
+yarn start            # serves http://localhost:4200
+yarn build            # production bundle
+yarn test             # Karma unit tests
+yarn electron:serve   # launch Electron shell against ng serve
+yarn electron:build   # generate desktop installers in release/
 ```
 
 Llama summarization service (`apps/llama`)

@@ -13,7 +13,7 @@
 - Backend environment:
   - `cd apps/backend && uv venv && uv pip sync`: preferred flow that reads `pyproject.toml`/`uv.lock`.
   - `cd apps/backend && python -m venv .venv && .\.venv\Scripts\activate && pip install -r requirements.txt`: fallback pip install.
-  - Copy `.env.example` to `.env` and provide `GOOGLE_PLACES_API_KEY`, `PLACES_DB_API_CONFIG`, `USERS_DB_API_CONFIG`, and optional Twitter creds (`USER`, `PASSWORD`, `EMAIL`).
+  - Copy `.env.example` to `.env` and provide `GOOGLE_PLACES_API_KEY`, Firebase service accounts via `PLACES_DB_API_CONFIG`/`USERS_DB_API_CONFIG` or file paths `PLACES_DB_API_CONFIG_FILE`/`USERS_DB_API_CONFIG_FILE`, plus optional Twitter creds (`USER`, `PASSWORD`, `EMAIL`).
   - Start the API: `cd apps/backend && python -m src.backend.main [--debug] [--from_file] [--no_db]` (listens on `http://localhost:5000`).
   - Tests & tooling: `python -m pytest tests`, `python -m pytest --cov=src tests`, `pylint src`.
   - Docs: `cd apps/backend/docs && make html`.
