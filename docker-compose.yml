@@ -30,14 +30,11 @@ services:
     environment:
       MODEL: /models/tinyllama-1.1b-chat.Q4_K_M.gguf
       MODEL_DOWNLOAD_URL: https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
-      N_CTX: 2048
-      USE_MLOCK: 1
+      USE_MLOCK: 0
     volumes:
       - ./models:/models
     ports:
       - "3001:8000"
-    cap_add:
-      - IPC_LOCK
     healthcheck:
       test:
         - CMD
