@@ -22,17 +22,16 @@ Repository layout
 
 - `apps/backend` – Flask API, recommendation engine, NLP, routing, database, and tests.
 - `apps/frontend` – Angular 16 single-page app under `src/app` with Tailwind styling.
-- `apps/llama` – Git submodule that hosts the LlamaGPT Docker stack used for summaries.
+- `models/` – Directory for LLM model files (auto-downloaded on first run).
 - `configs/`, `docker/`, `infra/` – deployment and environment stubs.
 - `local/` – scratch instructions and experiments that should not ship.
 
-Cloning & submodules
---------------------
+Cloning
+-------
 
 ```bash
 git clone git@github.com:<org>/pandapath.git
 cd pandapath
-git submodule update --init --recursive apps/llama
 ```
 
 Backend service (`apps/backend`)
@@ -123,21 +122,26 @@ yarn electron:serve   # launch Electron shell against ng serve
 yarn electron:build   # generate desktop installers in release/
 ```
 
-Llama summarization service (`apps/llama`)
------------------------------------------
+LLM summarization service
+-------------------------
 
-Trip summaries rely on an OpenAI-compatible chat completion endpoint. The `apps/llama`
-submodule vendors [getumbrel/llama-gpt](https://github.com/getumbrel/llama-gpt), which can
-run locally with Docker:
+Trip summaries and chat-based preference collection rely on an OpenAI-compatible chat
+completion endpoint. The project uses **TinyLlama 1.1B** (600MB), a lightweight model
+that runs efficiently on CPU.
 
-```bash
-cd apps/llama
-./run.sh --model 7b          # add --with-cuda for Nvidia acceleration
-```
+The LLM service is automatically started with `docker-compose up`. On first run, it will
+download the TinyLlama model (~600MB, takes 1-3 minutes).
 
 - The API lives at `http://localhost:3001/v1/chat/completions`, matching `src/api_calls/llama.py`.
-- The optional UI runs at `http://localhost:3000`.
+- Model files are stored in `models/` directory (gitignored).
 - Update `apps/frontend/src/environments/*.ts` if you expose the service elsewhere.
+
+**Model specifications:**
+- Model: TinyLlama 1.1B Chat v1.0 (Q4_K_M quantized)
+- Size: ~600MB
+- RAM requirement: ~2GB
+- Context window: 2048 tokens
+- Startup time: ~30-60 seconds
 
 Development notes
 -----------------

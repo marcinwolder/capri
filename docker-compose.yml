@@ -26,16 +26,14 @@ services:
 
   llama:
     image: ghcr.io/abetlen/llama-cpp-python:latest@sha256:b6d21ff8c4d9baad65e1fa741a0f8c898d68735fff3f3cd777e3f0c6a1839dd4
-    command: "/bin/sh /api/run.sh"
     restart: unless-stopped
     environment:
-      MODEL: /models/llama-2-7b-chat.bin
-      MODEL_DOWNLOAD_URL: https://huggingface.co/TheBloke/Nous-Hermes-Llama-2-7B-GGML/resolve/main/nous-hermes-llama-2-7b.ggmlv3.q4_0.bin
-      N_GQA: 1
+      MODEL: /models/tinyllama-1.1b-chat.Q4_K_M.gguf
+      MODEL_DOWNLOAD_URL: https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+      N_CTX: 2048
       USE_MLOCK: 1
     volumes:
-      - ./apps/llama/models:/models
-      - ./apps/llama/api:/api
+      - ./models:/models
     ports:
       - "3001:8000"
     cap_add:
@@ -49,6 +47,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
 
 secrets:
   firebase_places_sa:
