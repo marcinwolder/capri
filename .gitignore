@@ -2,3 +2,4 @@ local
 apps/backend/.env
 apps/frontend/release
 apps/backend/pandapath-*-firebase-adminsdk-*.json
+.DS_Store

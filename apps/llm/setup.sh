@@ -1,1 +1,0 @@
-pip install --upgrade huggingface-hub

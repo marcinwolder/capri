@@ -9,7 +9,7 @@ services:
       PLACES_DB_API_CONFIG_FILE: /run/secrets/firebase_places_sa
       USERS_DB_API_CONFIG_FILE: /run/secrets/firebase_users_sa
     ports:
-      - "5000:5000"
+      - 5000:5000
     restart: unless-stopped
     secrets:
       - firebase_places_sa
@@ -23,9 +23,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    depends_on:
+      - llm
 
   llm:
-    
+    image: ghcr.io/ggerganov/llama.cpp:server-b4646@sha256:645767ffdc357b440d688f61bd752808a339f08dd022cc19d552f53b2c612853
+    volumes:
+      - ./models:/models
+    ports:
+      - 3000:3000
+    command:
+      - -m
+      - /models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+      - --port
+      - "3000"
+      - -n
+      - "512"
 
 secrets:
   firebase_places_sa:
