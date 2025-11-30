@@ -8,6 +8,8 @@ services:
     environment:
       PLACES_DB_API_CONFIG_FILE: /run/secrets/firebase_places_sa
       USERS_DB_API_CONFIG_FILE: /run/secrets/firebase_users_sa
+      LLAMA_API_URL: http://llm:3000/v1/chat/completions
+      LLAMA_MODEL: tinyllama
     ports:
       - 5000:5000
     restart: unless-stopped

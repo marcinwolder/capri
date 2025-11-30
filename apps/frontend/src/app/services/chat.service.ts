@@ -49,6 +49,7 @@ export class ChatService {
         },
         body: JSON.stringify({
           messages,
+          model: environment.llamaModel,
           max_tokens: 1000,
           temperature: 0.5,
           stream: true,
