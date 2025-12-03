@@ -1751,6 +1751,7 @@ dependencies = [
     { name = "retry-requests" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "waitress" },
     { name = "wikipedia-api" },
 ]
 
@@ -1803,6 +1804,7 @@ requires-dist = [
     { name = "spacy", marker = "extra == 'nlp'", specifier = ">=3.8.7" },
     { name = "transformers", marker = "extra == 'nlp'", specifier = ">=4.29.2" },
     { name = "twscrape", marker = "extra == 'social'", specifier = ">=0.17.0" },
+    { name = "waitress", specifier = ">=2.1.2" },
     { name = "wikipedia-api", specifier = ">=0.8.1" },
 ]
 provides-extras = ["nlp", "docs", "social", "tests"]
@@ -3076,6 +3078,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bc/58/176e33013d79ffd785eeb5c08c58c0debb1301b38e329f55eb4d4d00bf57/urllib3_future-2.14.905.tar.gz", hash = "sha256:3693ad0fcaa97001dfee760ed45c44bf8234b178189ebcb6892a9f9a29b29834", size = 1109820, upload-time = "2025-10-16T03:30:14.096Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/91/78/f1063a6e5296f346ebc244c63729be0f52e26c4224d3ee30ac3d7547749e/urllib3_future-2.14.905-py3-none-any.whl", hash = "sha256:c9ad3a3860f2f2548e4ef297a152e5b66a9e19774c0557bfa55ae5d270868025", size = 681401, upload-time = "2025-10-16T03:30:12.094Z" },
+]
+
+[[package]]
+name = "waitress"
+version = "3.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/cb/04ddb054f45faa306a230769e868c28b8065ea196891f09004ebace5b184/waitress-3.0.2.tar.gz", hash = "sha256:682aaaf2af0c44ada4abfb70ded36393f0e307f4ab9456a215ce0020baefc31f", size = 179901, upload-time = "2024-11-16T20:02:35.195Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8d/57/a27182528c90ef38d82b636a11f606b0cbb0e17588ed205435f8affe3368/waitress-3.0.2-py3-none-any.whl", hash = "sha256:c56d67fd6e87c2ee598b76abdd4e96cfad1f24cacdea5078d382b1f9d7b5ed2e", size = 56232, upload-time = "2024-11-16T20:02:33.858Z" },
 ]
 
 [[package]]

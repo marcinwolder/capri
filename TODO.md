@@ -58,7 +58,7 @@ In this file you can find things that should be done in this project. It is not 
 
 ---
 
-- [ ] Backend is running on the development server
+- [x] Backend is running on the development server
 
   - **Source**: `apps/backend/main.py`
   - **What is wrong**: Even when starting the server, it states that this shouldn't be used in production.

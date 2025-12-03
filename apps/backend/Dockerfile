@@ -14,4 +14,4 @@ COPY src/ src/
 
 EXPOSE 5000
 
-CMD ["uv", "run", "python", "-m", "src.backend.main"]
+CMD ["uv", "run", "waitress-serve", "--listen=0.0.0.0:5000", "src.backend.wsgi:app"]

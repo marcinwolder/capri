@@ -198,7 +198,3 @@ def get_place_photo(name: str):
 	return Response(
 		generate(), headers=response_headers, status=google_response.status_code
 	)
-
-
-if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=5000)
