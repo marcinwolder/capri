@@ -33,6 +33,7 @@ export class TimeComponent implements OnInit{
     const saved_preferences = this.preferencesService.getLocalPreferences();
     this.money = saved_preferences.money;
     this.preferencesMethod = this.localStorageService.get('preferencesMethod') || this.preferencesMethod;
+    this.algorithmMode = this.recommendationService.getAlgorithmMode();
     this.preferencesService.hasSavedPreferences().subscribe(hasSavedPreferences => {
       this.hasSavedPreferences = hasSavedPreferences;
       if(hasSavedPreferences && !this.preferencesMethod) {
@@ -82,6 +83,7 @@ export class TimeComponent implements OnInit{
   nextClicked = false;
   hasSavedPreferences = false;
   rodoAccepted = false;
+  algorithmMode: 'legacy' | 'wibit' = 'legacy';
 
   setDates(dates: [Date, Date]) {
     this.dates = dates;
@@ -95,4 +97,9 @@ export class TimeComponent implements OnInit{
 
   protected readonly PreferencesMethods = PreferencesMethods;
   protected money = 0;
+
+  setAlgorithm(mode: 'legacy' | 'wibit') {
+    this.algorithmMode = mode;
+    this.recommendationService.setAlgorithmMode(mode);
+  }
 }

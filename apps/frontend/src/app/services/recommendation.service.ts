@@ -38,10 +38,15 @@ export class RecommendationService {
   private trip?: Trip;
   private history_trip_id?: string;
   private fetchNewTrip = false;
+  private algorithmMode: 'legacy' | 'wibit' = 'legacy';
 
   constructor(private http: HttpClient, private destinationService: DestinationService,
               private localStorageService: LocalStorageService, private authService: AuthService,
               private tripHistoryService: TripHistoryService) {
+    const storedMode = this.localStorageService.get('recommendation-algorithm');
+    if (storedMode === 'wibit' || storedMode === 'legacy') {
+      this.algorithmMode = storedMode;
+    }
   }
 
   private setPreference(key: PreferenceType, value: any): void {
@@ -61,6 +66,16 @@ export class RecommendationService {
 
   public setPreferences(preferences: Preferences): void {
     this.setPreference('preferences', preferences);
+  }
+
+  public setAlgorithmMode(mode: 'legacy' | 'wibit'): void {
+    this.algorithmMode = mode;
+    this.localStorageService.set('recommendation-algorithm', mode);
+    this.fetchNewTrip = true;
+  }
+
+  public getAlgorithmMode(): 'legacy' | 'wibit' {
+    return this.algorithmMode;
   }
 
   public getTripFromHistory(trip_id: string): void {
@@ -118,8 +133,9 @@ export class RecommendationService {
         console.log(payload.dates)
         payload.dates = payload.dates.map((date: Date) => this.dateToString(date));
         console.log(payload.dates)
-        console.log(this.HOST + endpoint, payload);
-        return this.http.post<RecommendationResponse>(this.HOST + 'api/recommendation/' + endpoint, payload,
+        const base = this.algorithmMode === 'wibit' ? 'api/recommendation/wibit/' : 'api/recommendation/';
+        console.log(this.HOST + base + endpoint, payload);
+        return this.http.post<RecommendationResponse>(this.HOST + base + endpoint, payload,
           httpOptions);
       }),
       catchError(error => throwError(() => new Error(`An error occurred while posting request: ${error.message || error}`)))
@@ -173,7 +189,6 @@ export class RecommendationService {
 
 
 }
-
 
 
 

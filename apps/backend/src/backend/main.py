@@ -9,6 +9,7 @@ from flask_cors import CORS, cross_origin
 import requests
 
 from src.backend.get_recommendation import get_recommendations
+from src.backend.get_recommendation_wibit import get_recommendations_wibit
 from src.backend.get_user_trip_history import get_user_trip
 from src.data_model import UserPreferences
 from src.database import DataBase, DataBaseUsers
@@ -82,6 +83,46 @@ def get_with_categories():
 	)
 	try:
 		recommendation = get_recommendations(
+			db,
+			db_users,
+			data['user_id'],
+			data['city_id'],
+			data['days'],
+			dates_tuple,
+			user_specified_needs,
+		)
+	except Exception as e:
+		logging.exception(e.__str__())
+		return jsonify({'status': 'error', 'received_data': e.__str__()})
+
+	return jsonify({'status': 'success', 'received_data': recommendation})
+
+
+@app.route('/api/recommendation/wibit/preferences', methods=['POST'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
+def get_with_categories_wibit():
+	data = request.json
+
+	if not data:
+		return jsonify({'status': 'error', 'message': 'No data in the request'})
+
+	categories = [category for category in data['preferences']['categories'].keys()]
+	subcategories = data['preferences']['categories']
+	dates = [datetime.strptime(date, '%Y-%m-%d').date() for date in data['dates']]
+	dates_tuple = (dates[0], dates[1])
+
+	user_specified_needs = UserPreferences(
+		data['preferences']['money'],
+		categories,
+		subcategories,
+		data['preferences'].get('restaurant_categories', []),
+		data['preferences'].get('needs', []),
+	)
+	try:
+		recommendation = get_recommendations_wibit(
 			db,
 			db_users,
 			data['user_id'],
