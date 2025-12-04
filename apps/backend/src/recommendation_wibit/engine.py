@@ -5,6 +5,7 @@ from datetime import date, datetime, time, timedelta
 from math import cos, pi, sqrt
 from typing import Dict, List, Sequence, Tuple
 
+from src.api_calls.llama import Llama
 from src.data_model.place.place import Place
 from src.data_model.place.place_visitor import PlaceVisitor
 from src.data_model.places.places import Places
@@ -344,7 +345,7 @@ def _preferred_categories(preferences: UserPreferences) -> List[str]:
     return [c for c in codes if c]
 
 
-def recommend_itinerary(places: Places, preferences: UserPreferences, dates: Tuple[date, date]) -> dict:
+def recommend_itinerary(places: Places, preferences: UserPreferences, dates: Tuple[date, date], city_name: str | None = None) -> dict:
     """Build itinerary using the WiBIT-like heuristic."""
     poi_candidates: List[Tuple[PointOfInterest, Place]] = []
     for place in places.get_list():
@@ -376,14 +377,22 @@ def recommend_itinerary(places: Places, preferences: UserPreferences, dates: Tup
 
     id_to_place: Dict[str, Place] = {str(poi.xid): place for poi, place in poi_candidates}
     place_visitor = PlaceVisitor()
+    summary_trip: List[Places] = []
     out_days = []
     for trajectory in schedule:
         day_places = []
+        day_place_objs: List[Place] = []
         for event in trajectory.events:
             place = id_to_place.get(str(event.poi.xid))
             if place is None:
                 continue
             day_places.append(place_visitor.place_to_itinerary(place))
+            day_place_objs.append(place)
         out_days.append({'places': day_places, 'weather': 0})
+        summary_trip.append(Places(day_place_objs))
 
-    return {'days': out_days, 'summary': ''}
+    summary = ''
+    if city_name:
+        summary = Llama.get_summary(city=city_name, trip=summary_trip)
+
+    return {'days': out_days, 'summary': summary}

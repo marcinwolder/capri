@@ -27,7 +27,7 @@ def get_recommendations_wibit(
 		db=db, city=city, user_preferences=user, from_file=from_file
 	)
 
-	itinerary = recommend_itinerary(places_list, preferences, dates)
+	itinerary = recommend_itinerary(places_list, preferences, dates, city.name)
 	trip_id = db_users.save_user_trip_history(user.user_id, city, itinerary)
 	itinerary['id'] = trip_id
 	itinerary['city_name'] = city.name
