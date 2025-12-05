@@ -16,6 +16,9 @@ DEFAULT_START = time(9, 0)
 DEFAULT_END = time(17, 0)
 DEFAULT_VISIT_MIN = 90
 PROXIMITY_RADIUS_M = 500
+SHORT_DIST = 500
+WALKING_SPEED = 0.5  # m/s
+DRIVING_SPEED = 3.7  # m/s
 
 
 @dataclass
@@ -41,6 +44,8 @@ class Event:
     start: time
     end: time
     poi: PointOfInterest
+    travel_seconds: int = 0
+    travel_mode: str = 'walk'
 
 
 @dataclass
@@ -61,12 +66,9 @@ def dist(poi1: PointOfInterest, poi2: PointOfInterest) -> float:
 
 
 def estimated_time(distance_meters: float) -> float:
-    walking_speed = 0.5  # m/s
-    driving_speed = 3.7  # m/s
-    short_dist = 500
-    if distance_meters < short_dist:
-        return distance_meters / walking_speed
-    return distance_meters / driving_speed
+    if distance_meters < SHORT_DIST:
+        return distance_meters / WALKING_SPEED
+    return distance_meters / DRIVING_SPEED
 
 
 def round_time(dt: datetime) -> datetime:
@@ -292,18 +294,23 @@ def build_trajectory(day: Day, pois_score: List[Tuple[PointOfInterest, float]], 
 
     for n in range(len(path)):
         if curr + travel_time + next_visiting < day.end:
+            travel_seconds = int(travel_time.total_seconds()) if n > 0 else 0
+            travel_mode = 'FOOT' if (n == 0 or graph[path[n - 1]][path[n]] < SHORT_DIST) else 'CAR'
             events.append(
                 Event(
                     start=round_time(curr + travel_time).time(),
                     end=round_time(curr + travel_time + next_visiting).time(),
                     poi=pois_score[better_path[n]][0],
+                    travel_seconds=travel_seconds,
+                    travel_mode=travel_mode,
                 )
             )
             if n + 1 >= len(path):
                 break
             curr += travel_time + next_visiting
             curr = round_time(curr)
-            travel_time = timedelta(seconds=estimated_time(graph[path[n]][path[n + 1]]))
+            edge_seconds = estimated_time(graph[path[n]][path[n + 1]])
+            travel_time = timedelta(seconds=edge_seconds)
             next_visiting = time_provider.get_visiting_time(pois_score[better_path[n + 1]][0])
     return Trajectory(events=events)
 
@@ -386,7 +393,8 @@ def recommend_itinerary(places: Places, preferences: UserPreferences, dates: Tup
             place = id_to_place.get(str(event.poi.xid))
             if place is None:
                 continue
-            day_places.append(place_visitor.place_to_itinerary(place))
+            transportation = (event.travel_seconds, event.travel_mode) if event.travel_seconds else None
+            day_places.append(place_visitor.place_to_itinerary(place, transportation))
             day_place_objs.append(place)
         out_days.append({'places': day_places, 'weather': 0})
         summary_trip.append(Places(day_place_objs))

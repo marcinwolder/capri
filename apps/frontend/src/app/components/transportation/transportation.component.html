@@ -1,5 +1,5 @@
 <i class="mr-2 fa-solid"
-   [ngClass]="{'fa-car': transportation[1] == 'CAR',
-                'fa-person-walking': transportation[1]=='FOOT'}">
+   [ngClass]="{'fa-car': mode === 'car',
+                'fa-person-walking': mode === 'foot'}">
 </i>
-<span>{{ transportation[0] }} min</span>
+<span>{{ minutes }} min</span>
