@@ -108,7 +108,7 @@ In this file you can find things that should be done in this project. It is not 
 
 ---
 
-- [ ] Add POI models from other project
+- [x] Add POI models from other project
 
   - **What is wrong**: There is a second part of the project including some POI algorithms.
   - **Why is it bad**: We are currently not using very detailed algorithm that is in the second project making the recommendations worse.
