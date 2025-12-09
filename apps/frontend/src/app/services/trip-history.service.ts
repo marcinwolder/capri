@@ -35,7 +35,7 @@ export class TripHistoryService {
                 trip_id: doc.id,
                 city_name: data['city_name'],
                 days_len: data['days_len'],
-                dates: data['dates']
+                dates: Array.isArray(data['dates']) ? data['dates'] : []
               } as TripOverview);
             });
             return trips;

@@ -41,7 +41,7 @@
     <ng-container *ngIf="trips===null">
       We could not fetch your trips.
     </ng-container>
-    <ng-container *ngIf="trips===[] && !trips.length">
+    <ng-container *ngIf="trips?.length === 0">
       You have not saved any trips yet.
     </ng-container>
     <ng-container *ngIf="trips">
@@ -52,8 +52,8 @@
           <span class="mx-1">{{ trip.days_len }}</span>
           <span>
             <ng-container *ngIf="trip.days_len>1; then days; else day"></ng-container>
-            <ng-template #days>days<br/>{{ trip.dates![0]}} : {{trip.dates![1]}}</ng-template>
-            <ng-template #day>day<br/>{{ trip.dates![0] }}</ng-template>
+            <ng-template #days>days<br/>{{ trip.dates?.[0] || 'Date unavailable' }} : {{ trip.dates?.[1] || 'Date unavailable' }}</ng-template>
+            <ng-template #day>day<br/>{{ trip.dates?.[0] || 'Date unavailable' }}</ng-template>
           </span>
         </div>
       </div>
