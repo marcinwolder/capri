@@ -9,7 +9,7 @@ uv venv && uv pip sync           # preferred
 # or: python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and fill in the required keys (Google Places API key, Firebase config, etc.).
+Copy `.env.example` to `.env` and fill in the required keys (Google Places API key; optional `DATA_DIR` override for local JSON storage).
 
 ## Run
 

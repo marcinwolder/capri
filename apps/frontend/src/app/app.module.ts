@@ -11,10 +11,6 @@ import { SelectionComponent } from './screens/selection/selection.component';
 import { DetailsComponent } from './screens/selection/preferences/details/details.component';
 import { TripComponent } from './screens/trip/trip.component';
 import { SignupComponent } from './screens/signup/signup.component';
-import {AngularFireModule} from "@angular/fire/compat";
-import {environment} from "../environments/environment";
-import {AngularFireAuthModule} from "@angular/fire/compat/auth";
-import { AngularFirestoreModule} from "@angular/fire/compat/firestore";
 import { SigninComponent } from './screens/signin/signin.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ErrorBoxComponent } from './components/error-box/error-box.component';
@@ -63,9 +59,6 @@ import { TransportationComponent } from './components/transportation/transportat
         BrowserModule,
         AppRoutingModule,
         FormsModule,
-        AngularFireModule.initializeApp(environment.firebase),
-        AngularFireAuthModule,
-        AngularFirestoreModule,
         NgOptimizedImage,
         HttpClientModule,
     ],

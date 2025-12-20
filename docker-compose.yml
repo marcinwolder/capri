@@ -5,15 +5,11 @@ services:
       dockerfile: Dockerfile
     env_file:
       - apps/backend/.env
-    environment:
-      PLACES_DB_API_CONFIG_FILE: /run/secrets/firebase_places_sa
-      USERS_DB_API_CONFIG_FILE: /run/secrets/firebase_users_sa
     ports:
       - 5000:5000
     restart: unless-stopped
-    secrets:
-      - firebase_places_sa
-      - firebase_users_sa
+    volumes:
+      - ./apps/backend/data:/app/data
     healthcheck:
       test:
         - CMD
@@ -40,9 +36,3 @@ services:
       - 3000:3000/tcp
     volumes:
       - ./apps/llama/models:/models
-
-secrets:
-  firebase_places_sa:
-    file: ./apps/backend/pandapath-places-firebase-adminsdk-fbsvc-9c55f9e23a.json
-  firebase_users_sa:
-    file: ./apps/backend/pandapath-users-firebase-adminsdk-fbsvc-904023fff7.json

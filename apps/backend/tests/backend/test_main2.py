@@ -4,7 +4,7 @@ from src.data_model.user.user_preferences import UserPreferences
 
 
 def _make_dict():
-	"""Check if loc exist in firebase db."""
+	"""Example preference payload."""
 	return {
 		'days': 1,
 		'categories': {

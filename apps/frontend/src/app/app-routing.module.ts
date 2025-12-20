@@ -11,18 +11,13 @@ import {HomeComponent} from "./screens/home/home.component";
 import {ProfileComponent} from "./screens/profile/profile.component";
 import {TextNoteComponent} from "./screens/selection/preferences/text-note/text-note.component";
 import {ChatComponent} from "./screens/selection/preferences/chat/chat.component";
-import {AngularFireAuthGuard} from "@angular/fire/compat/auth-guard";
-import {redirectUnauthorizedTo} from "@angular/fire/auth-guard";
 import {SocialMediaComponent} from "./screens/selection/preferences/social-media/social-media.component";
-
-const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['signin']);
 
 const routes: Routes = [
   {path: 'signup', component: SignupComponent},
   {path: 'signin', component: SigninComponent},
   {
-    path: 'selection', component: SelectionComponent, canActivate: [AngularFireAuthGuard],
-    data: {authGuardPipe: redirectUnauthorizedToLogin},
+    path: 'selection', component: SelectionComponent,
     children: [
       {path: '', component: CityComponent},
       {path: 'time', component: TimeComponent},
@@ -32,14 +27,8 @@ const routes: Routes = [
       {path: 'social-media', component: SocialMediaComponent}
     ]
   },
-  {
-    path: 'trip', component: TripComponent, canActivate: [AngularFireAuthGuard],
-    data: {authGuardPipe: redirectUnauthorizedToLogin}
-  },
-  {
-    path: 'profile', component: ProfileComponent, canActivate: [AngularFireAuthGuard],
-    data: {authGuardPipe: redirectUnauthorizedToLogin}
-  },
+  {path: 'trip', component: TripComponent},
+  {path: 'profile', component: ProfileComponent},
   {path: 'home', component: HomeComponent},
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: '**', component: HomeComponent}

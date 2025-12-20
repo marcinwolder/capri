@@ -4,9 +4,9 @@ PandaPath
 PandaPath is a travel planning platform that combines a Python/Flask backend, an Angular
 frontend, and an optional self-hosted Llama-based summarization service to build
 personalized city itineraries. The backend fetches attractions from Google Places, weather
-providers, and Firebase, optimizes each day with OR-Tools, enriches stops with nearby
+providers, and a local JSON cache, optimizes each day with OR-Tools, enriches stops with nearby
 dining, and produces a natural-language summary. The frontend guides travellers through
-preference collection, authentication, and itinerary review.
+preference collection and itinerary review.
 
 Key capabilities
 ----------------
@@ -14,7 +14,7 @@ Key capabilities
 - Preference-driven itineraries that consider dates, budget, accessibility, and trip length.
 - Route and day-part optimization powered by OR-Tools plus travel-time estimation models.
 - Aspect-based sentiment and NLP helpers to infer preferences from free text or Twitter.
-- Firebase-backed persistence for user profiles and trip history protected by Firebase Auth.
+- Local-only persistence for user profiles and trip history (no Firebase or third-party auth).
 - Optional LlamaGPT service exposed via an OpenAI-compatible API for trip narration.
 
 Repository layout
@@ -40,18 +40,18 @@ Backend service (`apps/backend`)
 
 - Python 3.10+
 - pip (or [uv](https://github.com/astral-sh/uv)) and virtualenv tooling
-- Credentials for Google Places, Firebase (two service accounts), and optional Twitter access for `twscrape`
+- Google Places API key and optional Twitter access for `twscrape`
 
 **Environment variables**:
 
 Copy `.env.example` to `.env` (or export the variables some other way) and fill in:
 
 - `GOOGLE_PLACES_API_KEY`
-- `PLACES_DB_API_CONFIG` and `USERS_DB_API_CONFIG` JSON blobs with Firebase service accounts (or point `PLACES_DB_API_CONFIG_FILE` / `USERS_DB_API_CONFIG_FILE` to the JSON files)
+- `DATA_DIR` to override where local JSON persistence lives (defaults to `apps/backend/data`)
 - `USER`, `PASSWORD`, `EMAIL` credentials if you plan to pull preferences from Twitter
 - `LLAMA_API_URL` pointing at the llama.cpp server (defaults to `http://llama:3000/v1/chat/completions` when using Docker Compose)
 
-When running through Docker Compose, drop the two Firebase service-account JSON files inside `apps/backend/` and keep them out of Git. The stack mounts them as Docker secrets and injects `PLACES_DB_API_CONFIG_FILE=/run/secrets/firebase_places_sa` and `USERS_DB_API_CONFIG_FILE=/run/secrets/firebase_users_sa`, so you never need to paste the raw JSON into `.env`.
+When running through Docker Compose, all persistence is local to the container volume; no cloud credentials are required.
 
 **Install dependencies**:
 
@@ -75,14 +75,15 @@ python -m src.backend.main [--debug] [--from_file] [--no_db]
 
 - `--debug`: emit verbose logs and run a quick recommendation sample.
 - `--from_file`: reuse cached Google Places responses from `outputs/`.
-- `--no_db`: disable Firebase reads/writes (handy for local prototyping).
+- Persistence is local JSON under `apps/backend/data` (configurable via `DATA_DIR`).
 
 **Key endpoints**:
 
 - `POST /api/recommendation/preferences` – build an itinerary from structured preferences.
 - `POST /get_with_text` – extract preferences from free text and return a recommendation.
 - `GET /api/restaurants-nearby` – look up dining options near a stop.
-- `GET /api/trip-history` / `GET /api/trip-history/<trip_id>` – fetch stored trips (Firebase token required).
+- `GET /api/trip-history` / `GET /api/trip-history/<trip_id>` – fetch stored trips (pass `user_id` query param or `X-User-Id` header).
+- `POST /api/trip-history/<trip_id>/rating` – rate a place within a stored trip (body: `user_id`, `day_index`, `place_index`, `rating`).
 
 **Tests, lint, docs**:
 
@@ -109,7 +110,7 @@ Frontend client (`apps/frontend`)
 cd apps/frontend
 yarn install   # or npm ci
 cp src/environments/environment.template src/environments/environment.ts
-# edit backendHost, llamaHost, firebase config, and googlePlacesAPIKey
+# edit backendHost/llamaHost if they differ
 ```
 
 **Run and test**:

@@ -13,7 +13,6 @@ export class SignupComponent {
 
   onSignup(value: any) {
     this.authService.createUserWithEmailAndPassword(value.email, value.password, value.name, value.surname, value.birthdate)
-      .then(() => this.router.navigate(['/selection']))
-      .catch(error => this.error = error.message.replace('Firebase: ', ''));
+      .then(() => this.router.navigate(['/selection']));
   }
 }

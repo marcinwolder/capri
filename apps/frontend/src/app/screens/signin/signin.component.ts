@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Component } from '@angular/core';
 import {Router} from "@angular/router";
 import {AuthService} from "../../services/auth.service";
 
@@ -8,43 +7,22 @@ import {AuthService} from "../../services/auth.service";
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.css']
 })
-export class SigninComponent implements OnInit {
+export class SigninComponent {
   error?: string;
   isDesktopApp = this.authService.isDesktopApp();
   constructor(private authService: AuthService, private router: Router) {}
 
-  async ngOnInit() {
-    try {
-      const res = await this.authService.handleGoogleRedirect();
-      if (res?.user) {
-        this.router.navigate(['/selection']);
-      }
-    } catch (err: any) {
-      this.error = err.message?.replace('Firebase: ', '');
-    }
-  }
-
   onSignIn(value: { email: string; password: string }) {
     this.authService.signInWithEmailAndPassword(value.email, value.password)
-      .then(res => {
-        console.log('You are Successfully signed in!', res);
+      .then(() => {
         this.router.navigate(['/selection']);
-      })
-      .catch(err => {
-        console.log('Something went wrong:', typeof err.message);
-        this.error = err.message.replace('Firebase: ', '');
       });
   }
 
   signInWithGoogle() {
     this.authService.signInWithGoogle()
-      .then(res => {
-        console.log('You are Successfully signed in with Google!', res);
+      .then(() => {
         this.router.navigate(['/selection']);
-      })
-      .catch(err => {
-        console.log('Error during Google sign in:', typeof err.message);
-        this.error = err.message.replace('Firebase: ', '');
       });
   }
 

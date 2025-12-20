@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
-import {AuthService} from "../../services/auth.service";
 import {Router} from "@angular/router";
-import {user} from "@angular/fire/auth";
 
 @Component({
   selector: 'app-home',
@@ -10,16 +8,10 @@ import {user} from "@angular/fire/auth";
 })
 export class HomeComponent {
 
-  constructor(private router: Router, private authService: AuthService) {
+  constructor(private router: Router) {
   }
 
   start() {
-    this.authService.currentUserValue.subscribe(user => {
-      if (user) {
-        this.router.navigate(['/selection']);
-      } else {
-        this.router.navigate(['/signin']);
-      }
-    });
+    this.router.navigate(['/selection']);
   }
 }

@@ -1,69 +1,51 @@
-"""Module that handles the connection to the database_module."""
+"""Local JSON-backed storage for places data (cloudless replacement)."""
 
 import json
 import os
+from pathlib import Path
+from typing import Any
 
-import firebase_admin
 from dotenv import load_dotenv
-from firebase_admin import credentials, firestore
 
 from src.constants import default_categories, dining
 from src.data_model import Places
 from src.data_model.city.city import City
 from src.data_model.place.place import Place, PlaceCreator, PlaceCreatorDatabase
-from src.data_model.place.place_subclasses import PlaceInfo
 
 load_dotenv()
 
 
 class DataBase:
-	"""Class that handles the connection to the database_module."""
+	"""Lightweight local persistence layer that replaces Firebase."""
 
-	app: firebase_admin.App
-	db: firestore.client
-
-	def __init__(self):
-		self._init_client()
+	def __init__(self, base_path: str | Path | None = None):
+		default_base = Path(__file__).resolve().parents[2] / 'data'
+		self.base_path = Path(os.getenv('DATA_DIR', base_path or default_base))
+		self.places_path = self.base_path / 'places'
+		self.places_path.mkdir(parents=True, exist_ok=True)
 		self._categories = default_categories
 		self._dining = dining
 
 	@staticmethod
-	def _load_service_account(env_name: str, file_env_name: str):
-		"""Load a Firebase service account config from a JSON string or file."""
-		file_path = os.getenv(file_env_name)
-		if file_path:
+	def _city_file(city: City) -> Path:
+		country = str(city.country).replace(' ', '_').lower()
+		return Path(f'{country}_{city.id}.json')
+
+	def _load_city_payload(self, city: City) -> dict[str, Any]:
+		file_path = self.places_path / self._city_file(city)
+		if not file_path.exists():
+			return {'places': [], 'categories': {}}
+		with open(file_path, 'r', encoding='utf-8') as handle:
 			try:
-				with open(file_path, 'r', encoding='utf-8') as file:
-					return json.load(file)
-			except FileNotFoundError as exc:
-				raise ValueError(
-					f'{file_env_name} points to a missing file: {file_path}'
-				) from exc
-			except json.JSONDecodeError as exc:
-				raise ValueError(
-					f'{file_env_name} does not point to valid JSON: {file_path}'
-				) from exc
+				return json.load(handle)
+			except json.JSONDecodeError:
+				return {'places': [], 'categories': {}}
 
-		json_blob = os.getenv(env_name)
-		if json_blob:
-			try:
-				return json.loads(json_blob)
-			except json.JSONDecodeError as exc:
-				raise ValueError(f'{env_name} is not valid JSON data.') from exc
-
-		raise ValueError(
-			f'Set either {env_name} or {file_env_name} to a Firebase service account.'
-		)
-
-	@classmethod
-	def _init_client(cls):
-		"""Function that initializes the connection to the database_module."""
-		config = cls._load_service_account(
-			'PLACES_DB_API_CONFIG', 'PLACES_DB_API_CONFIG_FILE'
-		)
-		cred = credentials.Certificate(config)
-		cls.app = firebase_admin.initialize_app(cred, name='PLACES')
-		cls.db = firestore.client(cls.app)
+	def _write_city_payload(self, city: City, payload: dict[str, Any]):
+		file_path = self.places_path / self._city_file(city)
+		file_path.parent.mkdir(parents=True, exist_ok=True)
+		with open(file_path, 'w', encoding='utf-8') as handle:
+			json.dump(payload, handle)
 
 	def add_place_to_database(
 		self,
@@ -73,98 +55,52 @@ class DataBase:
 		place_type: str,
 		categories: list[str],
 	):
-		"""Function that saves data to the database_module."""
+		"""Persist a place locally; avoids duplicate ids."""
+		payload = self._load_city_payload(city)
 		place_dict = json.loads(place.to_json())
-		doc_ref = (
-			self.db.collection(city.country)
-			.document(str(city.id))
-			.collection(place_type)
-			.document(str(place.placeInfo.id))
-		)
-		doc_ref.set(place_dict)
-
-		for i in place.types:
-			if categories.count(i) == 0:
-				continue
-			doc_ref_category = (
-				self.db.collection(city.country)
-				.document(str(city.id))
-				.collection(category_type)
-				.document(i)
-			)
+		existing = [
+			p for p in payload.get('places', []) if p.get('placeInfo', {}).get('id') != place.placeInfo.id
+		]
+		existing.append(place_dict)
+		payload['places'] = existing
+		cat_map = payload.get('categories', {})
+		cat_map[category_type] = categories
+		payload['categories'] = cat_map
+		self._write_city_payload(city, payload)
 
 	def add_categories_to_database(
 		self, city, category_type: str, categories: list[str]
 	):
-		"""Function that adds categories to the database_module."""
-		for category in categories:
-			doc_ref_category = (
-				self.db.collection(city.country)
-				.document(str(city.id))
-				.collection(category_type)
-			).document(category)
-			doc_ref_category.set(
-				{
-					'ids': [],
-				}
-			)
+		payload = self._load_city_payload(city)
+		cat_map = payload.get('categories', {})
+		cat_map[category_type] = categories
+		payload['categories'] = cat_map
+		self._write_city_payload(city, payload)
 
 	def read_places_data_from_db(
 		self, city, place_type: str, placeCreator: type[PlaceCreator]
 	) -> Places:
-		"""Function that reads data from the database_module and
-		returns it in the form of a pandas dataframe.
-		"""
-		doc_ref = (
-			self.db.collection(city.country)
-			.document(str(city.id))
-			.collection(place_type)
-		)
+		"""Load places for a city and hydrate them into objects."""
+		payload = self._load_city_payload(city)
 		places = []
-		for i in doc_ref.get():
-			i = i.to_dict()
-			place = placeCreator(i, city).create_place()
+		for item in payload.get('places', []):
+			place = placeCreator(item, city).create_place()
 			places.append(place)
-
 		return Places(places, city)
 
 	def check_if_city_exist(self, city):
-		"""Function that checks if city exist in database_module."""
-		doc_ref = (
-			self.db.collection(city.country).document(str(city.id)).collection('places')
-		)
-		if doc_ref.get():
-			return True
-		return False
+		"""Check if we have cached data for a city."""
+		return (self.places_path / self._city_file(city)).exists()
 
 	def get_all_places(self, city, place_type: str):
-		"""Function that returns all places from the database_module."""
-		doc_ref = (
-			self.db.collection(city.country)
-			.document(str(city.id))
-			.collection(place_type)
-		)
-		places = []
-		for i in doc_ref.get():
-			i = i.to_dict()
-			places.append(i)
-		return places
+		"""Return all raw places for a city."""
+		payload = self._load_city_payload(city)
+		return payload.get('places', [])
 
 	def get_place(self, city, place_id: str):
-		"""Function that returns one place from the database_module."""
-		doc_ref = (
-			self.db.collection(city.country)
-			.document(str(city.id))
-			.collection('places')
-			.document(place_id)
-		)
-		return PlaceCreatorDatabase(doc_ref.get().to_dict(), city).create_place()
-
-
-def debug():
-	city = City(1705104301)
-	place = Place(PlaceInfo(id='1'))
-	db = DataBase()
-	db.update_place(place, city, 'categories', 'places', default_categories)
-	ret = db.get_all_places(city, 'places')
-	print(ret)
+		"""Return a single place by id."""
+		payload = self._load_city_payload(city)
+		for item in payload.get('places', []):
+			if item.get('placeInfo', {}).get('id') == place_id:
+				return PlaceCreatorDatabase(item, city).create_place()
+		raise ValueError(f'Place {place_id} not found for city {city.id}')

@@ -15,7 +15,7 @@ Test for Empty Data
 
 Test for Database Interaction
 
-    Description: Check how the route interacts with the Firebase database, especially in scenarios where the database might be unreachable or return unexpected results.
+    Description: Check how the route interacts with the local JSON datastore, especially in scenarios where the file might be missing or corrupted.
     Expected: The route should handle database errors gracefully and possibly return a relevant error message.
 
 Test for Aspect Analyzer Functionality

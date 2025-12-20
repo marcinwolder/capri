@@ -91,7 +91,7 @@ const getStartUrl = () => {
     return startUrlPromise;
   }
 
-  // Serve the built app over http instead of file:// to satisfy Firebase auth.
+// Serve the built app over http instead of file:// to match SPA asset expectations.
   startUrlPromise = startStaticServer().then(({ url, server }) => {
     staticServer = server;
     return url;

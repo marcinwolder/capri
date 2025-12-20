@@ -1,195 +1,154 @@
-"""Module that handles the connection to the database_module."""
+"""Local JSON-backed storage for user preferences and trip history."""
 
+import copy
 import json
 import os
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
 
 from dotenv import load_dotenv
-from firebase_admin import firestore, credentials, initialize_app, auth
 
 from src.data_model import TripInfo
 from src.data_model.city.city import City
-from src.data_model.place.place import Place
-from src.data_model.place.place_subclasses import Location, PlaceInfo
-from src.data_model.place.place_visitor import PlaceVisitor
-from src.data_model.user.user import User
 
 load_dotenv()
 
 
 class DataBaseUsers:
-	"""Class that handles the connection to the database_module."""
+	"""Local persistence replacing Firebase users/trip history."""
 
-	@staticmethod
-	def _load_service_account(env_name: str, file_env_name: str):
-		"""Load a Firebase service account config from a JSON string or file."""
-		file_path = os.getenv(file_env_name)
-		if file_path:
+	def __init__(self, base_path: str | Path | None = None):
+		default_base = Path(__file__).resolve().parents[2] / 'data'
+		self.base_path = Path(os.getenv('DATA_DIR', base_path or default_base))
+		self.base_path.mkdir(parents=True, exist_ok=True)
+		self.users_file = self.base_path / 'users.json'
+		if not self.users_file.exists():
+			self._persist({'users': {}})
+
+	def _load(self) -> dict[str, Any]:
+		with open(self.users_file, 'r', encoding='utf-8') as handle:
 			try:
-				with open(file_path, 'r', encoding='utf-8') as file:
-					return json.load(file)
-			except FileNotFoundError as exc:
-				raise ValueError(
-					f'{file_env_name} points to a missing file: {file_path}'
-				) from exc
-			except json.JSONDecodeError as exc:
-				raise ValueError(
-					f'{file_env_name} does not point to valid JSON: {file_path}'
-				) from exc
+				return json.load(handle)
+			except json.JSONDecodeError:
+				return {'users': {}}
 
-		json_blob = os.getenv(env_name)
-		if json_blob:
-			try:
-				return json.loads(json_blob)
-			except json.JSONDecodeError as exc:
-				raise ValueError(f'{env_name} is not valid JSON data.') from exc
+	def _persist(self, payload: dict[str, Any]):
+		self.users_file.parent.mkdir(parents=True, exist_ok=True)
+		with open(self.users_file, 'w', encoding='utf-8') as handle:
+			json.dump(payload, handle)
 
-		raise ValueError(
-			f'Set either {env_name} or {file_env_name} to a Firebase service account.'
-		)
-
-	def __init__(self):
-		config = self._load_service_account(
-			'USERS_DB_API_CONFIG', 'USERS_DB_API_CONFIG_FILE'
-		)
-		cred = credentials.Certificate(config)
-		self.app = initialize_app(cred, name='USERS')
-		self.db = firestore.client(self.app)
+	def _get_or_create_user(self, user_id: str) -> dict[str, Any]:
+		data = self._load()
+		users = data.setdefault('users', {})
+		if user_id not in users:
+			users[user_id] = {
+				'id': user_id,
+				'profile': {},
+				'preferences': {},
+				'trip_history': [],
+			}
+			self._persist(data)
+		return users[user_id]
 
 	def get_one_user_by_id(self, user: TripInfo):
-		"""Function that reads data from the database_module
-		and returns it in the form of a pandas dataframe.
-		"""
-		return self.db.collection('users').document(user.user_id).get().to_dict()
+		"""Return stored user payload."""
+		data = self._load()
+		return data.get('users', {}).get(user.user_id)
 
 	def check_if_user_exist(self, user: TripInfo):
-		"""Function that checks if city exist in database_module."""
-		doc_ref = self.db.collection(user.user_id)
-		if doc_ref.get():
-			return True
-		return False
+		data = self._load()
+		return user.user_id in data.get('users', {})
 
 	def update_user(self, user: TripInfo):
-		"""Function that updates user in database_module."""
-		user = user.to_json()
-		user = json.loads(user)
-		doc_ref = self.db.collection('users').document(user['user_id'])
-		doc_ref.update(user)
+		data = self._load()
+		users = data.setdefault('users', {})
+		users[user.user_id] = users.get(user.user_id, {})
+		users[user.user_id]['id'] = user.user_id
+		users[user.user_id]['profile'] = user.to_dict()
+		self._persist(data)
 
 	def save_user_preferences(self, user: TripInfo):
-		"""Function that saves user preferences in database_module."""
-		user = user.to_json()
-		user = json.loads(user)
-		doc_ref = self.db.collection('users').document(user['user_id'])
-		doc_ref.update(user['user_preferences'])
+		data = self._load()
+		users = data.setdefault('users', {})
+		users[user.user_id] = users.get(user.user_id, {'id': user.user_id})
+		users[user.user_id]['preferences'] = user.user_preferences.to_dict()
+		self._persist(data)
 
 	def save_user_trip_history(self, user_id: str, city: City, itinerary: dict) -> str:
-		"""Function that saves user trip history in database_module.
-		:param user_id: str
-		:param city: City
-		:param itinerary: list
+		"""Persist a trip itinerary locally."""
+		data = self._load()
+		users = data.setdefault('users', {})
+		user_entry = users.setdefault(
+			user_id,
+			{'id': user_id, 'profile': {}, 'preferences': {}, 'trip_history': []},
+		)
 
-		:rtype: str
-		:return: trip_id
-		"""
-		itinerary = itinerary.copy()
-		itinerary_days = itinerary.pop('days')
+		itinerary_copy = copy.deepcopy(itinerary)
+		days = itinerary_copy.pop('days', [])
+		trip_id = itinerary_copy.pop('id', str(uuid4()))
 		payload = {
-			'days_len': len(itinerary_days),
+			'id': trip_id,
+			'days': days,
+			'days_len': len(days),
 			'city_id': city.id,
 			'city_name': city.name,
-			**itinerary,
+			**itinerary_copy,
 		}
 
-		doc_ref = (
-			self.db.collection('users')
-			.document(user_id)
-			.collection('trip_history')
-			.document()
-		)
-		doc_ref.set(payload)
-		days_collection = doc_ref.collection('days')
-		for i, day in enumerate(itinerary_days):
-			day_doc = days_collection.document(str(i))
-			day_doc.set({'places_len': len(day['places']), 'weather': day['weather']})
-			for j, place in enumerate(day['places']):
-				day_doc.collection('places').document(str(j)).set({'id': place['id']})
-		return doc_ref.id
-
-	def _verify_token(self, token):
-		"""Function that verifies token."""
-		return auth.verify_id_token(token, app=self.app)
+		user_entry['trip_history'] = user_entry.get('trip_history', [])
+		user_entry['trip_history'] = [
+			t for t in user_entry['trip_history'] if t.get('id') != trip_id
+		]
+		user_entry['trip_history'].append(payload)
+		self._persist(data)
+		return trip_id
 
 	@staticmethod
-	def _trip_to_dict(trip_id: str, trip_doc):
-		"""Function that converts trip to dict."""
-		trip = trip_doc.get().to_dict()
-		trip_info = {'id': trip_id, 'days': [], **trip}
-		print('trip_info', trip_info)
-		for i in range(trip.pop('days_len')):
-			day_ref = trip_doc.collection('days').document(str(i))
-			day_dict = day_ref.get().to_dict()
-			if day_dict is None:
-				day_dict = {'places_len': 0}
-			day_dict['places'] = []
-			for placeIndex in range(day_dict.pop('places_len')):
-				day_dict['places'].append(
-					day_ref.collection('places')
-					.document(str(placeIndex))
-					.get()
-					.to_dict()
-				)
-			trip_info['days'].append(day_dict)
-		print('trip_info', trip_info)
+	def _trip_to_dict(trip: dict[str, Any]):
+		"""Normalize trip payload to expected shape."""
+		trip_info = {'id': trip.get('id'), 'days': trip.get('days', []), **trip}
+		trip_info.pop('trip_history', None)
 		return trip_info
 
-	def get_user_trip(self, token: str, trip_id: str):
-		"""Function that gets user trip."""
-		uid = self._verify_token(token)['uid']
-		trip = (
-			self.db.collection('users')
-			.document(uid)
-			.collection('trip_history')
-			.document(trip_id)
-		)
-		return self._trip_to_dict(trip_id, trip)
+	def get_user_trip(self, user_id: str, trip_id: str):
+		data = self._load()
+		user_entry = data.get('users', {}).get(user_id)
+		if not user_entry:
+			raise ValueError(f'User {user_id} not found')
+		for trip in user_entry.get('trip_history', []):
+			if trip.get('id') == trip_id:
+				return self._trip_to_dict(trip)
+		raise ValueError(f'Trip {trip_id} not found for user {user_id}')
 
-	def get_user_trip_history(self, token: str = '', user_id: str = None):
-		"""Function that gets user trip history."""
-		uid = user_id if user_id is not None else self._verify_token(token)['uid']
-		return [
-			self._trip_to_dict(doc.id, doc)
-			for doc in self.db.collection('users')
-			.document(uid)
-			.collection('trip_history')
-			.list_documents()
-		]
+	def get_user_trip_history(self, user_id: str):
+		data = self._load()
+		user_entry = data.get('users', {}).get(user_id, {})
+		return [self._trip_to_dict(trip) for trip in user_entry.get('trip_history', [])]
+
+	def set_trip_rating(
+		self, user_id: str, trip_id: str, day_index: int, place_index: int, rating: float
+	):
+		"""Update rating for a place within a stored trip."""
+		data = self._load()
+		user_entry = data.get('users', {}).get(user_id)
+		if not user_entry:
+			raise ValueError(f'User {user_id} not found')
+		for trip in user_entry.get('trip_history', []):
+			if trip.get('id') != trip_id:
+				continue
+			days = trip.get('days', [])
+			if day_index >= len(days):
+				raise IndexError('Invalid day index')
+			places = days[day_index].get('places', [])
+			if place_index >= len(places):
+				raise IndexError('Invalid place index')
+			places[place_index]['user_rating'] = rating
+			self._persist(data)
+			return
+		raise ValueError(f'Trip {trip_id} not found for user {user_id}')
 
 	def get_all_users(self):
-		"""Function that gets all users."""
-		return [doc.to_dict() for doc in self.db.collection('users').get()]
-
-
-def debug_update_user(db, user_id):
-	user = TripInfo(user_id, 'user_name', 'user_email')
-
-	print(db.check_if_user_exist(user))
-	user = TripInfo(user_id, 'user_name', 'user_email2')
-	db.update_user(user)
-	print(db.check_if_user_exist(user))
-
-
-def debug_trip_history(db, user_id):
-	user = TripInfo(user_id)
-
-	placeVIsitor = PlaceVisitor()
-	place1 = Place(
-		location=Location(50.06143, 19.93658), placeInfo=PlaceInfo(displayName='Hotel')
-	)
-	place2 = Place(
-		location=Location(50.06143, 19.93658), placeInfo=PlaceInfo(displayName='Hotel2')
-	)
-	place1 = placeVIsitor.place_to_itinerary(place1)
-	place2 = placeVIsitor.place_to_itinerary(place2)
-	itinerary = {'0': [place1, place2]}
-
-	db.save_user_trip_history(user, itinerary)
+		"""Return all stored user profiles."""
+		data = self._load()
+		return list(data.get('users', {}).values())

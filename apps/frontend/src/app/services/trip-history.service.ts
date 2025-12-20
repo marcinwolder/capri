@@ -1,11 +1,10 @@
 import {Injectable} from '@angular/core';
 import {AuthService} from "./auth.service";
-import {catchError, from, map, Observable, of, pipe, switchMap} from "rxjs";
-import {HttpClient} from "@angular/common/http";
+import {catchError, map, Observable, of} from "rxjs";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Trip} from "../data-model/trip";
 import {TripOverview} from "../data-model/tripOverview";
-import {data} from "autoprefixer";
 
 interface TripHistoryResponse {
   data: Trip[] | Trip;
@@ -17,85 +16,72 @@ interface TripHistoryResponse {
 })
 export class TripHistoryService {
 
-  constructor(private http: HttpClient, private authService: AuthService) {
+  constructor(private http: HttpClient, private authService: AuthService) {}
+
+  private getUserId(): string | null {
+    const user = this.authService.getCurrentUser();
+    return user?.uid || null;
   }
 
   getTripHistoryOverview() {
-    return this.authService.getCurrentUserDocRef().pipe(
-      switchMap(userRef => {
-        if (!userRef) {
-          return of(null);
+    const userId = this.getUserId();
+    if (!userId) {
+      return of(null);
+    }
+    const params = new HttpParams().set('user_id', userId);
+    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history', {params}).pipe(
+      map(response => {
+        if (!response.success) {
+          throw new Error('Failed to fetch trip history');
         }
-        return from(userRef.collection('trip_history').get()).pipe(
-          map(tripsSnapshot => {
-            const trips: TripOverview[] = [];
-            tripsSnapshot.forEach(doc => {
-              const data = doc.data()
-              trips.push({
-                trip_id: doc.id,
-                city_name: data['city_name'],
-                days_len: data['days_len'],
-                dates: data['dates']
-              } as TripOverview);
-            });
-            return trips;
-          }),
-          catchError(error => {
-            console.error('Error fetching trip history:', error);
-            return of(null);
-          })
-        );
+        const trips = Array.isArray(response.data) ? response.data as Trip[] : [response.data as Trip];
+        return trips.map(trip => ({
+          trip_id: trip.id,
+          city_name: trip.city_name || '',
+          days_len: trip.days?.length || 0,
+          dates: (trip as any).dates || []
+        } as TripOverview));
+      }),
+      catchError(error => {
+        console.error('Error fetching trip history:', error);
+        return of(null);
       })
     );
   }
 
-  private getHttpOptions = (token: string) => {
-    return {headers: {'Authorization': 'Bearer ' + token}}
-  };
-
   public getTrip(tripId: string) {
-    return this.authService.currentUserValue.pipe(
-      switchMap(user => {
-        if (!user) {
-          return of(null);
+    const userId = this.getUserId();
+    if (!userId) {
+      return of(null);
+    }
+    const params = new HttpParams().set('user_id', userId);
+    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history/' + tripId, {params}).pipe(
+      map(response => {
+        if (!response.success) {
+          throw new Error('Failed to fetch trip history');
         }
-        return from(user.getIdToken()).pipe(
-          switchMap(token => {
-            return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history/' + tripId,
-              this.getHttpOptions(token));
-          }),
-          switchMap(response => {
-            if (!response.success) {
-              throw new Error('Failed to fetch trip history');
-            }
-            return of(response.data as Trip);
-          }),
-          catchError(error => {
-            console.error('Error fetching trip:', error);
-            return of(null);
-          })
-        );
+        return response.data as Trip;
+      }),
+      catchError(error => {
+        console.error('Error fetching trip:', error);
+        return of(null);
       })
-    )
+    );
   }
 
   rateTripAttraction(tripId: string, day_index: number, attraction_index: number, rating: number): Observable<boolean> {
-    return this.authService.getCurrentUserDocRef().pipe(
-      switchMap(userRef => {
-        if (!userRef) {
-          throw new Error("User reference is not available");
-        }
-        const dayRef = userRef.collection('trip_history')
-          .doc(tripId)
-          .collection('days')
-          .doc(day_index.toString());
-        const placeRef = dayRef.collection('places')
-          .doc(attraction_index.toString());
-
-        return from(placeRef.update({ user_rating: rating })).pipe(
-          map(() => true)
-        );
-      }),
+    const userId = this.getUserId();
+    if (!userId) {
+      return of(false);
+    }
+    const body = {
+      user_id: userId,
+      day_index,
+      place_index: attraction_index,
+      rating
+    };
+    return this.http.post<TripHistoryResponse>(`${environment.backendHost}api/trip-history/${tripId}/rating`, body).pipe(
+      map(response => response.success),
       catchError(error => {
         console.error('Error rating attraction:', error);
         return of(false);

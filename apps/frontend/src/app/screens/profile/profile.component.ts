@@ -28,14 +28,20 @@ export class ProfileComponent implements OnInit{
   ngOnInit() {
     this.authService.getCurrentUserInfo().subscribe(user => {
       if (!user) {
+        this.user = undefined;
+        this.preferences = undefined;
+        this.trips = null;
         this.router.navigate(['/signin']);
         return;
       }
-      this.user = user;
-    });
 
+      this.user = user;
+      this.loadProfileData();
+    });
+  }
+
+  private loadProfileData() {
     this.tripHistoryService.getTripHistoryOverview().subscribe(trips => {
-      console.log(trips);
       this.trips = trips;
     });
 

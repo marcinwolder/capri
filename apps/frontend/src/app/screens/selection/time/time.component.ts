@@ -4,7 +4,6 @@ import {Router} from "@angular/router";
 import {PreferencesService} from "../../../services/preferences.service";
 import {LocalStorageService} from "../../../services/local-storage.service";
 import {RecommendationService} from "../../../services/recommendation.service";
-import {AuthService} from "../../../services/auth.service";
 
 const PreferencesMethods = [
   'Saved Preferences',
@@ -25,7 +24,7 @@ export class TimeComponent implements OnInit{
 
   constructor(private _router: Router, public destinationService: DestinationService,
               private preferencesService: PreferencesService, private localStorageService: LocalStorageService,
-              private recommendationService: RecommendationService, private authService: AuthService) {}
+              private recommendationService: RecommendationService) {}
 
   ngOnInit(): void {
     const destination = this.destinationService.getDestination();
@@ -33,6 +32,7 @@ export class TimeComponent implements OnInit{
     const saved_preferences = this.preferencesService.getLocalPreferences();
     this.money = saved_preferences.money;
     this.preferencesMethod = this.localStorageService.get('preferencesMethod') || this.preferencesMethod;
+    this.algorithmMode = this.recommendationService.getAlgorithmMode();
     this.preferencesService.hasSavedPreferences().subscribe(hasSavedPreferences => {
       this.hasSavedPreferences = hasSavedPreferences;
       if(hasSavedPreferences && !this.preferencesMethod) {
@@ -82,6 +82,7 @@ export class TimeComponent implements OnInit{
   nextClicked = false;
   hasSavedPreferences = false;
   rodoAccepted = false;
+  algorithmMode: 'legacy' | 'wibit' = 'legacy';
 
   setDates(dates: [Date, Date]) {
     this.dates = dates;
@@ -95,4 +96,9 @@ export class TimeComponent implements OnInit{
 
   protected readonly PreferencesMethods = PreferencesMethods;
   protected money = 0;
+
+  setAlgorithm(mode: 'legacy' | 'wibit') {
+    this.algorithmMode = mode;
+    this.recommendationService.setAlgorithmMode(mode);
+  }
 }

@@ -12,7 +12,7 @@ This package hosts the Angular 16 client that powers PandaPath. You can now run 
 ```bash
 yarn install
 cp src/environments/environment.template src/environments/environment.ts
-# edit backendHost, llamaHost, firebase config, etc.
+# edit backendHost/llamaHost if they differ
 ```
 
 ## Web development server

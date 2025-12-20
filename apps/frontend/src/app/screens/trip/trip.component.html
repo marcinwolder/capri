@@ -77,6 +77,9 @@
               </div>
             </ng-container>
             <div *ngFor="let attraction of day; index as j">
+              <div class="mt-2 ml-3" *ngIf="j>0 && attraction.transportation">
+                <app-transportation [transportation]="attraction.transportation"></app-transportation>
+              </div>
               <div class="p-2 mt-2 bg-gray-100 rounded-lg shadow-xs">
                 <div class="flex items-center justify-between" (click)="toggleAttractionDetails(i, j)">
                   <h3 class="mx-4 text-lg font-semibold text-gray-800">
@@ -202,10 +205,6 @@
                   </div>
                 </div>
 
-              </div>
-
-              <div class="mt-2 ml-3" *ngIf="attraction.transportation">
-                <app-transportation [transportation]="attraction.transportation"></app-transportation>
               </div>
 
             </div>

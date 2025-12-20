@@ -1,14 +1,5 @@
 export const environment = {
   backendHost: 'http://127.0.0.1:5000/',
   llamaHost: 'http://localhost:3000/',
-  llamaModel: 'tinyllama',
-  firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    measurementId: ""
-  },
+  llamaModel: 'tinyllama'
 };

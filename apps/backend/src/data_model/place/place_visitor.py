@@ -21,7 +21,8 @@ class Visitor:
 			'rating': place.ratings.rating,
 			'personal_rating': place.ratings.cumulative_rating,
 			'googleMapsUri': place.placeInfo.googleMapsUri,
-			'image': place.photos[0] if len(place.photos) > 0 else None,
+			# Persist only serializable photo data instead of Photo objects
+			'image': place.photos[0].to_dict() if len(place.photos) > 0 else None,
 			'price': place.priceLevel,
 			'reviews': place.ratings.userRatingCount,
 			'latitude': place.location.latitude,
