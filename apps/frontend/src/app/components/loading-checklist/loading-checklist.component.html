@@ -1,0 +1,48 @@
+<div class="w-full max-w-4xl mx-auto bg-gray-900/70 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 text-white">
+  <div class="p-6 pb-4 flex items-start justify-between gap-4">
+    <div>
+      <p class="text-3xl font-semibold">Relax, we’re building your trip</p>
+      <p class="text-sm text-gray-200/80 mt-1">You’ll see each step as we finalize the itinerary.</p>
+    </div>
+    <div class="w-28 h-2 bg-white/10 rounded-full overflow-hidden mt-1">
+      <div class="h-full bg-blue-400 transition-all duration-500" [style.width]="progressPercent"></div>
+    </div>
+  </div>
+
+  <div class="px-6 pb-6 space-y-3">
+    <div *ngFor="let step of stepsState; index as i"
+         class="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+      <div class="mt-1 h-7 w-7 rounded-full flex items-center justify-center"
+           [ngClass]="{
+             'bg-blue-500 shadow-lg shadow-blue-500/30 animate-pulse': step.state === 'active',
+             'bg-emerald-500 shadow-lg shadow-emerald-500/30': step.state === 'done',
+             'bg-white/15 border border-white/10': step.state === 'pending'
+           }">
+        <ng-container [ngSwitch]="step.state">
+          <i *ngSwitchCase="'done'" class="fa-solid fa-check text-xs"></i>
+          <span *ngSwitchCase="'active'" class="h-2 w-2 rounded-full bg-white"></span>
+          <span *ngSwitchDefault class="h-2 w-2 rounded-full bg-white/50"></span>
+        </ng-container>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between gap-2">
+          <p class="font-semibold text-lg">{{ step.label }}</p>
+          <span class="text-xs uppercase tracking-wide"
+                [ngClass]="{
+                  'text-emerald-200': step.state === 'done',
+                  'text-blue-200': step.state === 'active',
+                  'text-gray-300/70': step.state === 'pending'
+                }">
+            {{ step.state === 'done' ? 'Done' : step.state === 'active' ? 'In progress' : 'Queued' }}
+          </span>
+        </div>
+        <p *ngIf="step.detail" class="text-sm text-gray-200/80 mt-1">{{ step.detail }}</p>
+        <div class="mt-2 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-400 transition-all duration-500"
+               [ngStyle]="{'width': step.state === 'done' ? '100%' : step.state === 'active' ? '65%' : '12%'}">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -28,6 +28,7 @@ import { ChatComponent } from './screens/selection/preferences/chat/chat.compone
 import { SocialMediaComponent } from './screens/selection/preferences/social-media/social-media.component';
 import { RatingComponent } from './components/rating/rating.component';
 import { TransportationComponent } from './components/transportation/transportation.component';
+import { LoadingChecklistComponent } from './components/loading-checklist/loading-checklist.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { TransportationComponent } from './components/transportation/transportat
     SocialMediaComponent,
     RatingComponent,
     TransportationComponent,
+    LoadingChecklistComponent,
   ],
     imports: [
         BrowserModule,

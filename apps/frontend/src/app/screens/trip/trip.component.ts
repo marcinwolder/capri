@@ -25,6 +25,7 @@ export class TripComponent implements OnInit{
               private restaurantsService: RestaurantsService) {}
 
   ngOnInit(): void {
+    this.resetLoadingState();
     this.recommendationService.getRecommendedTrip().subscribe({
       next: (trip) => {
         this.attractions = trip.days.map(day => day.places.map(attraction => {
@@ -32,19 +33,28 @@ export class TripComponent implements OnInit{
         }));
         this.weatherForecasts = trip.days.map(day => day.weather);
         this.summary = trip.summary;
-        this.isLoaded = true;
+        this.tripLoaded = true;
+        this.accelerateChecklist = true;
+        this.finishLoading();
         this.tripId = trip.id;
         this.city_id = trip.city_id;
       },
       error: (error: Error) => {
         this.error = error.message;
+        this.cancelChecklist = true;
       }
     });
   }
 
   tripId?: string;
   isLoaded = false;
-  error?:string = undefined;
+  error?: string;
+  // checklist & loading state
+  private tripLoaded = false;
+  checklistCompleted = false;
+  accelerateChecklist = false;
+  cancelChecklist = false;
+
   attractions: AttractionField[][] = [];
   summary: string = '';
   currentDayIndex = 0;
@@ -82,12 +92,12 @@ export class TripComponent implements OnInit{
     section?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  toggleMap() {
+  toggleMap(): void {
     this.showMap = !this.showMap;
   }
 
-  rateAttraction(day_index: number, att_index: number, rating: number) {
-    this.tripHistoryService.rateTripAttraction(this.tripId!, day_index, att_index, rating).subscribe()
+  rateAttraction(day_index: number, att_index: number, rating: number): void {
+    this.tripHistoryService.rateTripAttraction(this.tripId!, day_index, att_index, rating).subscribe();
   }
 
   searchRestaurants(place: Place) {
@@ -100,6 +110,25 @@ export class TripComponent implements OnInit{
         console.log(error);
       }
     });
+  }
+
+  onChecklistCompleted(): void {
+    this.checklistCompleted = true;
+    this.finishLoading();
+  }
+
+  private finishLoading(): void {
+    if (this.tripLoaded && this.checklistCompleted) {
+      this.isLoaded = true;
+    }
+  }
+
+  private resetLoadingState(): void {
+    this.isLoaded = false;
+    this.tripLoaded = false;
+    this.checklistCompleted = false;
+    this.accelerateChecklist = false;
+    this.cancelChecklist = false;
   }
 
   protected readonly Number = Number;

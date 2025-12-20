@@ -1,10 +1,14 @@
 <app-background [image]="'2.jpg'" xmlns="http://www.w3.org/1999/html"></app-background>
 
-<div *ngIf="!isLoaded&&!error"
-     class="flex flex-col h-full w-full justify-center align-middle bg-gray-900 bg-opacity-20 px-2">
-  <h1 class="text-center text-white text-shadow  text-5xl">Relax while we work on your trip</h1>
-  <h2 class="text-center text-white text-shadow text-4xl">This can take a few minutes.</h2>
-  <app-spinner [isLoading]="true" class="my-10"></app-spinner>
+<div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-gray-900/30">
+  <app-loading-checklist
+    [accelerate]="accelerateChecklist"
+    [cancelled]="cancelChecklist"
+    (completed)="onChecklistCompleted()">
+  </app-loading-checklist>
+  <p class="mt-4 text-white text-center text-lg opacity-80">
+    We’ll surface your itinerary as soon as these steps finish.
+  </p>
 </div>
 
 
