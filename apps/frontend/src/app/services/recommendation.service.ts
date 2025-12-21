@@ -81,6 +81,16 @@ export class RecommendationService {
     this.fetchNewTrip = false;
   }
 
+  public getTripLoadMode(): 'generation' | 'history' | 'local' {
+    if (this.fetchNewTrip) {
+      return 'generation';
+    }
+    if (this.history_trip_id) {
+      return 'history';
+    }
+    return 'local';
+  }
+
   private savePreferencesToLocalStorage(): void {
     this.localStorageService.set('recommendation-preferences', JSON.stringify(this.preference));
   }

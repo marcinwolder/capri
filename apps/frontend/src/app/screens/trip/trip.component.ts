@@ -16,6 +16,14 @@ interface AttractionField extends Place {
   visible: boolean;
 }
 
+interface LoadingChecklistStep {
+  key: string;
+  label: string;
+  detail?: string;
+  minMs: number;
+  maxMs: number;
+}
+
 @Component({
   selector: 'app-trip',
   templateUrl: './trip.component.html',
@@ -40,6 +48,8 @@ export class TripComponent implements OnInit{
 
   ngOnInit(): void {
     this.resetLoadingState();
+    this.loadingMode = this.recommendationService.getTripLoadMode();
+    this.waitForReadyIndex = this.loadingMode === 'generation' ? 2 : 0;
     this.recommendationService.getRecommendedTrip().subscribe({
       next: (trip) => {
         this.attractions = trip.days.map(day => day.places.map(attraction => {
@@ -66,6 +76,17 @@ export class TripComponent implements OnInit{
   tripReady = false;
   checklistCompleted = false;
   cancelChecklist = false;
+  loadingMode: 'generation' | 'history' | 'local' = 'generation';
+  waitForReadyIndex = 2;
+  simpleLoadingSteps: LoadingChecklistStep[] = [
+    {
+      key: 'load-trip',
+      label: 'Loading trip data',
+      detail: 'Fetching your saved itinerary.',
+      minMs: 200,
+      maxMs: 500
+    }
+  ];
 
   attractions: AttractionField[][] = [];
   summary: string = '';

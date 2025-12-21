@@ -1,15 +1,29 @@
 <app-background [image]="'2.jpg'" xmlns="http://www.w3.org/1999/html"></app-background>
 
 <div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-gray-900/30">
-  <app-loading-checklist
-    [cancelled]="cancelChecklist"
-    [waitForReadyIndex]="2"
-    [ready]="tripReady"
-    (completed)="onChecklistCompleted()">
-  </app-loading-checklist>
-  <p class="mt-4 text-white text-center text-lg opacity-80">
-    We’ll surface your itinerary as soon as these steps finish.
-  </p>
+  <ng-container *ngIf="loadingMode === 'generation'; else simpleLoader">
+    <app-loading-checklist
+      [cancelled]="cancelChecklist"
+      [waitForReadyIndex]="waitForReadyIndex"
+      [ready]="tripReady"
+      (completed)="onChecklistCompleted()">
+    </app-loading-checklist>
+    <p class="mt-4 text-white text-center text-lg opacity-80">
+      We’ll surface your itinerary as soon as these steps finish.
+    </p>
+  </ng-container>
+  <ng-template #simpleLoader>
+    <app-loading-checklist
+      [cancelled]="cancelChecklist"
+      [steps]="simpleLoadingSteps"
+      [waitForReadyIndex]="waitForReadyIndex"
+      [ready]="tripReady"
+      (completed)="onChecklistCompleted()">
+    </app-loading-checklist>
+    <p class="mt-4 text-white text-center text-lg opacity-80">
+      Loading saved trip data...
+    </p>
+  </ng-template>
 </div>
 
 
