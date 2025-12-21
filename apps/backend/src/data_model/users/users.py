@@ -1,6 +1,6 @@
 from src.data_model.city.city import City
 from src.data_model.user.user import User
-from src.database import DataBaseUsers
+from src.database.user_database import DataBaseUsers
 
 
 class Users:

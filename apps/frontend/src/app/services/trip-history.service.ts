@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {AuthService} from "./auth.service";
 import {catchError, map, Observable, of} from "rxjs";
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Trip} from "../data-model/trip";
 import {TripOverview} from "../data-model/tripOverview";
@@ -16,20 +15,10 @@ interface TripHistoryResponse {
 })
 export class TripHistoryService {
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  private getUserId(): string | null {
-    const user = this.authService.getCurrentUser();
-    return user?.uid || null;
-  }
+  constructor(private http: HttpClient) {}
 
   getTripHistoryOverview() {
-    const userId = this.getUserId();
-    if (!userId) {
-      return of(null);
-    }
-    const params = new HttpParams().set('user_id', userId);
-    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history', {params}).pipe(
+    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history').pipe(
       map(response => {
         if (!response.success) {
           throw new Error('Failed to fetch trip history');
@@ -50,12 +39,7 @@ export class TripHistoryService {
   }
 
   public getTrip(tripId: string) {
-    const userId = this.getUserId();
-    if (!userId) {
-      return of(null);
-    }
-    const params = new HttpParams().set('user_id', userId);
-    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history/' + tripId, {params}).pipe(
+    return this.http.get<TripHistoryResponse>(environment.backendHost + 'api/trip-history/' + tripId).pipe(
       map(response => {
         if (!response.success) {
           throw new Error('Failed to fetch trip history');
@@ -70,12 +54,7 @@ export class TripHistoryService {
   }
 
   rateTripAttraction(tripId: string, day_index: number, attraction_index: number, rating: number): Observable<boolean> {
-    const userId = this.getUserId();
-    if (!userId) {
-      return of(false);
-    }
     const body = {
-      user_id: userId,
       day_index,
       place_index: attraction_index,
       rating

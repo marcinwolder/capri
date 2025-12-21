@@ -9,7 +9,7 @@ from src.data_model.place.place_visitor import PlaceVisitor
 from src.data_model.places.places import Places
 from src.data_model.user.user_info import TripInfo
 from src.data_model.user.user_preferences import UserPreferences
-from src.database import DataBase, DataBaseUsers
+from src.database import DataBase, DataBaseTrips
 from src.path import get_path
 from src.recommendation import Recommendation
 
@@ -68,8 +68,7 @@ def get_attractions(
 
 def get_recommendations(
 	db: DataBase,
-	db_users: DataBaseUsers,
-	user_id: str,
+	db_trips: DataBaseTrips,
 	city_id: int,
 	days: int,
 	dates: tuple[date, date],
@@ -80,7 +79,7 @@ def get_recommendations(
 	city = City(city_id)
 
 	user = TripInfo(
-		user_id=user_id, user_preferences=preferences, city=city, days=days, dates=dates
+		user_id='global', user_preferences=preferences, city=city, days=days, dates=dates
 	)
 
 	places_list = get_attractions(
@@ -89,6 +88,6 @@ def get_recommendations(
 
 	recommendation = Recommendation(places=places_list, user=user).get_recommendation()
 	itinerary = recommendation.get_itinerary()
-	trip_id = db_users.save_user_trip_history(user.user_id, city, itinerary)
+	trip_id = db_trips.save_trip_history(city, itinerary)
 	itinerary['id'] = trip_id
 	return itinerary

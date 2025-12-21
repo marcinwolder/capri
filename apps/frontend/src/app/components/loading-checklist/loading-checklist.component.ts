@@ -32,6 +32,8 @@ interface ChecklistStepState extends ChecklistStep {
 export class LoadingChecklistComponent implements OnInit, OnDestroy, OnChanges {
   @Input() accelerate = false;
   @Input() cancelled = false;
+  @Input() holdLastStep = false;
+  @Input() ready = false;
   @Input() steps: ChecklistStep[] = [
     {
       key: 'analyze-preferences',
@@ -88,6 +90,9 @@ export class LoadingChecklistComponent implements OnInit, OnDestroy, OnChanges {
     if (changes['accelerate'] && this.accelerate) {
       this.fastForward();
     }
+    if (changes['ready'] && this.ready) {
+      this.completeHeldStep();
+    }
     if (changes['cancelled'] && this.cancelled) {
       this.clearTimer();
     }
@@ -128,6 +133,11 @@ export class LoadingChecklistComponent implements OnInit, OnDestroy, OnChanges {
 
     this.activeIndex = index;
     this.stepsState[index].state = 'active';
+
+    if (this.holdLastStep && index === this.stepsState.length - 1 && !this.ready) {
+      this.clearTimer();
+      return;
+    }
     const duration = this.shouldFastForward ? this.fastDuration() : this.stepsState[index].duration;
     this.clearTimer();
     this.timerHandle = window.setTimeout(() => {
@@ -159,6 +169,21 @@ export class LoadingChecklistComponent implements OnInit, OnDestroy, OnChanges {
 
   private randomDuration(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  private completeHeldStep(): void {
+    if (!this.holdLastStep) {
+      return;
+    }
+    const lastIndex = this.stepsState.length - 1;
+    if (this.activeIndex !== lastIndex) {
+      return;
+    }
+    if (this.stepsState[lastIndex]?.state !== 'active') {
+      return;
+    }
+    this.stepsState[lastIndex].state = 'done';
+    this.runStep(lastIndex + 1);
   }
 
   private clearTimer(): void {

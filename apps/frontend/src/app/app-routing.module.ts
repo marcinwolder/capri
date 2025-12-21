@@ -5,17 +5,13 @@ import {TimeComponent} from "./screens/selection/time/time.component";
 import {SelectionComponent} from "./screens/selection/selection.component";
 import {DetailsComponent} from "./screens/selection/preferences/details/details.component";
 import {TripComponent} from "./screens/trip/trip.component";
-import {SignupComponent} from "./screens/signup/signup.component";
-import {SigninComponent} from "./screens/signin/signin.component";
 import {HomeComponent} from "./screens/home/home.component";
-import {ProfileComponent} from "./screens/profile/profile.component";
+import {HistoryComponent} from "./screens/history/history.component";
 import {TextNoteComponent} from "./screens/selection/preferences/text-note/text-note.component";
 import {ChatComponent} from "./screens/selection/preferences/chat/chat.component";
 import {SocialMediaComponent} from "./screens/selection/preferences/social-media/social-media.component";
 
 const routes: Routes = [
-  {path: 'signup', component: SignupComponent},
-  {path: 'signin', component: SigninComponent},
   {
     path: 'selection', component: SelectionComponent,
     children: [
@@ -28,7 +24,7 @@ const routes: Routes = [
     ]
   },
   {path: 'trip', component: TripComponent},
-  {path: 'profile', component: ProfileComponent},
+  {path: 'history', component: HistoryComponent},
   {path: 'home', component: HomeComponent},
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: '**', component: HomeComponent}

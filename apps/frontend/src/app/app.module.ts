@@ -10,12 +10,9 @@ import { NextFooterComponent } from './components/next-footer/next-footer.compon
 import { SelectionComponent } from './screens/selection/selection.component';
 import { DetailsComponent } from './screens/selection/preferences/details/details.component';
 import { TripComponent } from './screens/trip/trip.component';
-import { SignupComponent } from './screens/signup/signup.component';
-import { SigninComponent } from './screens/signin/signin.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ErrorBoxComponent } from './components/error-box/error-box.component';
 import { HomeComponent } from './screens/home/home.component';
-import { ProfileComponent } from './screens/profile/profile.component';
 import {NgOptimizedImage} from "@angular/common";
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import { LoadingComponent } from './screens/loading/loading.component';
@@ -23,6 +20,7 @@ import { SpinnerComponent } from './components/spinner/spinner.component';
 import { MapComponent } from './components/map/map.component';
 import { BackgroundComponent } from './components/background/background.component';
 import { DatePickerComponent } from './components/date-picker/date-picker.component';
+import { HistoryComponent } from './screens/history/history.component';
 import { TextNoteComponent } from './screens/selection/preferences/text-note/text-note.component';
 import { ChatComponent } from './screens/selection/preferences/chat/chat.component';
 import { SocialMediaComponent } from './screens/selection/preferences/social-media/social-media.component';
@@ -40,17 +38,15 @@ import { BackendStatusInterceptor } from './services/backend-status.interceptor'
     SelectionComponent,
     DetailsComponent,
     TripComponent,
-    SignupComponent,
-    SigninComponent,
     NavbarComponent,
     ErrorBoxComponent,
     HomeComponent,
-    ProfileComponent,
     LoadingComponent,
     SpinnerComponent,
     MapComponent,
     BackgroundComponent,
     DatePickerComponent,
+    HistoryComponent,
     TextNoteComponent,
     ChatComponent,
     SocialMediaComponent,

@@ -8,7 +8,6 @@ import {Preferences} from "../data-model/preferences";
 import {DestinationService} from "./destination.service";
 import {LocalStorageService} from "./local-storage.service";
 import {Trip} from "../data-model/trip";
-import {AuthService} from "./auth.service";
 import {TripHistoryService} from "./trip-history.service";
 
 const httpOptions = {
@@ -40,7 +39,7 @@ export class RecommendationService {
   private algorithmMode: 'legacy' | 'wibit' = 'legacy';
 
   constructor(private http: HttpClient, private destinationService: DestinationService,
-              private localStorageService: LocalStorageService, private authService: AuthService,
+              private localStorageService: LocalStorageService,
               private tripHistoryService: TripHistoryService) {
     const storedMode = this.localStorageService.get('recommendation-algorithm');
     if (storedMode === 'wibit' || storedMode === 'legacy') {
@@ -115,14 +114,9 @@ export class RecommendationService {
   private postRecommendationRequest(endpoint: string, data: ChatMessage[] | string | Preferences):
     Observable<RecommendationResponse> {
 
-    const user = this.authService.getCurrentUser();
-    if (!user) {
-      return throwError(() => new Error('User not signed in'));
-    }
     const payload: any = {
       ...this.destinationService.getDestination(),
-      preferences: data,
-      user_id: user.uid
+      preferences: data
     };
     payload.dates = payload.dates.map((date: Date) => this.dateToString(date));
     const base = this.algorithmMode === 'wibit' ? 'api/recommendation/wibit/' : 'api/recommendation/';

@@ -1,6 +1,6 @@
 {
-  "name": "ta",
-  "version": "0.0.0",
+  "name": "cita-system",
+  "version": "0.1.0",
   "main": "electron/main.js",
   "scripts": {
     "ng": "ng",

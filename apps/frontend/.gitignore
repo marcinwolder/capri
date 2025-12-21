@@ -45,4 +45,5 @@ Thumbs.db
 ./src/environments/*.ts
 environment.ts
 /.firebase
+/release
 .firebaserc
