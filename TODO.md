@@ -4,7 +4,6 @@ In this file you can find things that should be done in this project. It is not 
 
 - [TODO](#todo)
 	- [Backend](#backend)
-	- [Frontend](#frontend)
 	- [Project](#project)
 
 ## Backend
@@ -25,15 +24,6 @@ In this file you can find things that should be done in this project. It is not 
   - **Why is it bad**: Hard to evaluate quality, communicate changes, or justify switching providers.
   - **Proposed solution**: Define a minimal prompt suite, run it across both LLMs, and record outputs for review.
 
-## Frontend
-
-- [ ] Trip generation loading flow lacks step-by-step checklist
-
-  - **Source**: `apps/frontend/src/.`
-  - **What is wrong**: During trip generation the UI only shows a generic loader and hides what is happening behind the scenes.
-  - **Why is it bad**: Users wait without feedback and miss an opportunity to feel confident about progress.
-  - **Proposed solution**: When a trip is generating, show an animated, mocked checklist of ~5 sequential steps (e.g., analyzing preferences, selecting attractions/POIs, arranging days, applying POI algorithms/adjusting add-remove-edit, generating descriptions with LLM). Each step should display a brief randomized duration within defined ranges (early steps ~0.5–2.5s, later steps up to the max expected generation time) so the sequence feels lively while keeping total time realistic.
-
 ## Project
 
 - [ ] Build-and-run handoff not streamlined
@@ -51,24 +41,6 @@ In this file you can find things that should be done in this project. It is not 
   - **What is wrong**: Current initialization requires many steps and decisions.
   - **Why is it bad**: Onboarding slows down and increases likelihood of misconfiguration.
   - **Proposed solution**: Simplify defaults, reduce required steps, and document the minimal path to a working environment.
-
----
-
-- [ ] Docker requirement not justified
-
-  - **Source**: `.`
-  - **What is wrong**: It is unclear whether Docker is required or optional.
-  - **Why is it bad**: Uncertainty causes extra setup and potential blockers for environments where Docker is restricted.
-  - **Proposed solution**: Clarify when Docker is necessary, provide justification, and document alternatives if feasible.
-
----
-
-- [ ] Stakeholder cannot view the app easily
-
-  - **Source**: `.`
-  - **What is wrong**: There is no guaranteed way for the stakeholder to see the application running.
-  - **Why is it bad**: Feedback loops slow down and acceptance may be blocked.
-  - **Proposed solution**: Publish a demo build or hosted preview and share clear access instructions.
 
 ---
 
@@ -96,12 +68,3 @@ In this file you can find things that should be done in this project. It is not 
   - **What is wrong**: There is no approved email summarizing the prompt sent to the LLM.
   - **Why is it bad**: Stakeholders cannot review or sign off on prompt wording before use.
   - **Proposed solution**: Draft an approval email that outlines the LLM prompt, circulate it, and capture sign-off.
-
----
-
-- [ ] Windows compatibility unverified
-
-  - **Source**: `.`
-  - **What is wrong**: The application has not been validated on Windows.
-  - **Why is it bad**: Windows users may encounter blockers that are undiscovered on other platforms.
-  - **Proposed solution**: Test the full stack on Windows, document steps, and address platform-specific issues.
