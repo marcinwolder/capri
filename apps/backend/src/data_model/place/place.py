@@ -178,7 +178,6 @@ class PlaceCreatorAPI(PlaceCreator):
 
 	def create_place(self):
 		place = self._create_place()
-		place.regularOpeningHours = self.data.get('regularOpeningHours', {})
 
 		place.placeInfo = PlaceInfo(
 			name=self.data.get('name', ''),
