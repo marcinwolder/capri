@@ -78,13 +78,8 @@
 
   <div class="container mx-auto p-4">
     <div class="bg-white rounded-lg rounded-b-none p-6 pb-3 border-b antialiased">
-      <div class="text-gray-900 antialiased"
-           [ngClass]="{'line-clamp-3': !displayAllSummary}">
+      <div class="text-gray-900 antialiased">
         {{ summary }}
-      </div>
-      <div class="cursor-pointer mt-2 w-fit text-blue-500 hover:text-blue-600"
-           (click)="displayAllSummary=!displayAllSummary">
-        {{ displayAllSummary ? 'Show less' : 'Show more...' }}
       </div>
     </div>
     <nav class="sticky top-0 z-10 bg-white overflow-hidden border-b flex justify-between rounded-lg rounded-t-none">

@@ -92,7 +92,6 @@ export class TripComponent implements OnInit{
   summary: string = '';
   currentDayIndex = 0;
   showMap = false;
-  displayAllSummary = false;
   weatherForecasts: number[] = [];
   city_id?: string;
 
