@@ -113,7 +113,7 @@ const createWindow = async () => {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      partition: 'persist:pandapath'
+      partition: 'persist:citasystem'
     }
   });
 

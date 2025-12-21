@@ -4,7 +4,7 @@
 
 - Monorepo with two active apps plus an LLM service: `apps/backend` (Flask API, recommendation/NLP/routing layers), `apps/frontend` (Angular 16 + Tailwind, Electron build targets), and `apps/llama` (llama.cpp server image and model cache). Keep changes scoped to the relevant app.
 - LLM summaries now come from the `llama` Docker service (llama.cpp image) loading TinyLlama into `apps/llama/models/`; treat the downloaded models as third-party/vendored and avoid editing them.
-- Docker Compose wires backend + LLM (ports 5000/3000). Firebase service-account JSON files are mounted as secrets (`apps/backend/pandapath-*-firebase-adminsdk-*.json`)—do not check in real credentials.
+- Docker Compose wires backend + LLM (ports 5000/3000).
 - Deployment/development stubs live in `configs/`, `docker/`, and `infra/`. Keep environment-specific material out of app folders.
 
 ## Build, Test, and Development Commands
@@ -12,12 +12,12 @@
 - Backend (Python 3.10+):
   - Preferred install: `cd apps/backend && uv venv && uv pip sync` (uses `pyproject.toml`/`uv.lock`).
   - Fallback: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
-  - Copy `.env.example` to `.env`; set `GOOGLE_PLACES_API_KEY`, Firebase creds via `PLACES_DB_API_CONFIG`/`USERS_DB_API_CONFIG` or file vars `PLACES_DB_API_CONFIG_FILE`/`USERS_DB_API_CONFIG_FILE`, and optional Twitter creds (`USER`/`PASSWORD`/`EMAIL`). Docker Compose injects the Firebase file paths for you.
+  - Copy `.env.example` to `.env`; set `GOOGLE_PLACES_API_KEY` and optional Twitter creds (`USER`/`PASSWORD`/`EMAIL`).
   - Run API: `cd apps/backend && python -m src.backend.main [--debug] [--from_file] [--no_db]`.
   - Tests/tools: `python -m pytest tests`, `python -m pytest --cov=src tests`, `pylint src`. Docs: `cd apps/backend/docs && make html`.
 - Frontend:
   - `cd apps/frontend && yarn install` (or `npm ci`).
-  - Copy `src/environments/environment.template` to `src/environments/environment.ts`; set `backendHost`, `llamaHost` (defaults to `http://localhost:3000`), Firebase config, and optional `googlePlacesAPIKey`.
+  - Copy `src/environments/environment.template` to `src/environments/environment.ts`; set `backendHost`, `llamaHost` (defaults to `http://localhost:3000`), and optional `googlePlacesAPIKey`.
   - Web: `yarn start` / `yarn build` / `yarn test`. Desktop: `yarn electron:serve` and `yarn electron:build` (outputs to `release/`).
 - LLM service:
   - `docker compose up -d` downloads TinyLlama (~600MB) into `apps/llama/models/` on first run and exposes `http://localhost:3000/v1/chat/completions`. Update frontend env vars if you host it elsewhere.
@@ -41,6 +41,6 @@
 
 ## Configuration & Secrets
 
-- Never commit real credentials. Use `apps/backend/.env.example` as the template and keep Firebase service accounts out of Git; Docker secrets mount local JSON files when composing.
-- Frontend environment vars live in `apps/frontend/src/environments/*.ts`; keep Firebase keys configurable per deployment.
+- Never commit real credentials. Use `apps/backend/.env.example` as the template and keep secrets out of Git.
+- Frontend environment vars live in `apps/frontend/src/environments/*.ts`; keep them configurable per deployment.
 - Model downloads populate `apps/llama/models/` (gitignored). Keep overrides to Docker/LLM config in deployment tooling rather than editing image defaults.
