@@ -8,14 +8,21 @@ from src.data_model.places.places import Places
 
 SUMMARY_PROMPT = """
 <ROLE>
-    You are a travel copywriter. You must write a short summary of a trip on the provided places.
+    You are a travel summarizer. You must write a short factual summary of a trip from the provided places.
 </ROLE>
 <RULES>
-    - Mention most places
-	- Keep to the provided names and city.
+    - Output a single paragraph, exactly 3 sentences, ~45-75 words.
+    - Start with "On this trip, you will..." or "This trip includes..." and keep it summary-like.
+    - Do not include "Day 1/Day 2" or numbered sections; never mirror day labels from input.
+    - Ignore any "Day X" labels in the input; treat them only as grouping hints.
+    - Do not list place names; allow at most 1-2 place names total for flavor when helpful.
+    - Prefer describing categories of activities and overall atmosphere at a high level.
+    - Use only the provided city and trip content; do not invent places or activities.
+    - Avoid comma-separated lists; do not provide an itinerary.
+    - Keep to the provided names and city.
 </RULES>
 <OUTPUT>
-    2-3 paragraph, second-person narrative about a future trip in the provided city.
+    A concise, factual, non-narrative summary of the trip in the provided city.
 </OUTPUT>
 """
 
@@ -26,13 +33,14 @@ class Llama:
 
 	@classmethod
 	def get_summary(cls, city: str, trip: list[Places]):
-		trip_lines = []
-		for i, day in enumerate(trip):
+		trip_groups = []
+		for day in trip:
 			day_places = ', '.join(
 				place.placeInfo.displayName for place in day.get_list()
 			)
-			trip_lines.append(f'Day {i + 1}: {day_places}')
-		trip_str = '\n'.join(trip_lines)
+			if day_places:
+				trip_groups.append(day_places)
+		trip_str = '; '.join(trip_groups)
 		modified_messages = [
 			{
 				'content': SUMMARY_PROMPT,
@@ -45,7 +53,7 @@ class Llama:
 				cls.API_URL,
 				json={
 					'messages': modified_messages,
-					'max_tokens': 600,
+					'max_tokens': 140,
 					'temperature': 0.3,
 				},
 			)
