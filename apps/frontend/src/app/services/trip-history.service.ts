@@ -68,6 +68,16 @@ export class TripHistoryService {
     );
   }
 
+  deleteTrip(tripId: string): Observable<boolean> {
+    return this.http.delete<TripHistoryResponse>(`${environment.backendHost}api/trip-history/${tripId}`).pipe(
+      map(response => response.success),
+      catchError(error => {
+        console.error('Error deleting trip:', error);
+        return of(false);
+      })
+    );
+  }
+
 
 
 }

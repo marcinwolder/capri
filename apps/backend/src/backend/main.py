@@ -74,6 +74,16 @@ def rate_trip(trip_id: str):
 		return jsonify({'success': False, 'message': str(exc)}), 500
 
 
+@app.route('/api/trip-history/<trip_id>', methods=['DELETE'])
+def delete_trip(trip_id: str):
+	try:
+		db_trips.delete_trip(trip_id)
+		return jsonify({'success': True}), 200
+	except Exception as exc:
+		logging.exception(exc)
+		return jsonify({'success': False, 'message': str(exc)}), 500
+
+
 @app.route('/api/recommendation/preferences', methods=['POST'])
 @cross_origin(
 	origins=ALLOWED_ORIGINS,

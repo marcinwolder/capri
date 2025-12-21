@@ -5,7 +5,7 @@
     <div class="rounded-2xl bg-white/90 p-6 shadow-lg">
       <h1 class="text-2xl font-semibold text-gray-900">Trip history</h1>
       <p class="mt-2 text-gray-600">
-        Browse previously generated itineraries.
+        Browse previously generated trips.
       </p>
 
       <div *ngIf="loading" class="mt-6 text-gray-700">
@@ -29,12 +29,22 @@
               </div>
               <div class="text-sm text-gray-600">
                 {{ trip.days_len }} day{{ trip.days_len === 1 ? '' : 's' }}
+                <ng-container *ngIf="getTripDatesLabel(trip) as datesLabel">
+                  ({{ datesLabel }})
+                </ng-container>
               </div>
             </div>
-            <button class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-                    (click)="goToTrip(trip)">
-              View trip
-            </button>
+            <div class="flex flex-wrap gap-2">
+              <button class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                      (click)="goToTrip(trip)">
+                View trip
+              </button>
+              <button class="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                      [disabled]="deletingTripId === trip.trip_id"
+                      (click)="deleteTrip(trip)">
+                {{ deletingTripId === trip.trip_id ? 'Removing...' : 'Remove' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>

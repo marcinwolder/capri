@@ -78,6 +78,16 @@ class DataBaseTrips:
 		data = self._load()
 		return [self._trip_to_dict(trip) for trip in data.get('trips', [])]
 
+	def delete_trip(self, trip_id: str):
+		"""Delete a trip from history."""
+		data = self._load()
+		trips = data.get('trips', [])
+		remaining = [trip for trip in trips if trip.get('id') != trip_id]
+		if len(remaining) == len(trips):
+			raise ValueError(f'Trip {trip_id} not found')
+		data['trips'] = remaining
+		self._persist(data)
+
 	def set_trip_rating(
 		self, trip_id: str, day_index: int, place_index: int, rating: float
 	):
