@@ -11,15 +11,15 @@
 
    ```powershell
    # Windows PowerShell
-   git clone <repo> cita-system
-   cd cita-system
+   git clone <repo> capri
+   cd capri
    copy apps\backend\.env.example apps\backend\.env
    ```
 
    ```bash
    # macOS / zsh lub bash
-   git clone <repo> cita-system
-   cd cita-system
+   git clone <repo> capri
+   cd capri
    cp apps/backend/.env.example apps/backend/.env
    ```
 

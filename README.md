@@ -1,7 +1,7 @@
-CITA System
+CAPRI
 =========
 
-CITA System is a travel planning platform that combines a Python/Flask backend, an Angular
+CAPRI is a travel planning platform that combines a Python/Flask backend, an Angular
 frontend, and an optional self-hosted Llama-based summarization service to build
 personalized city itineraries. The backend fetches attractions from Google Places, weather
 providers, and a local JSON cache, optimizes each day with OR-Tools, enriches stops with nearby
@@ -29,8 +29,8 @@ Cloning
 -------
 
 ```bash
-git clone git@github.com:<org>/cita-system.git
-cd cita-system
+git clone git@github.com:<org>/capri.git
+cd capri
 ```
 
 Backend service (`apps/backend`)

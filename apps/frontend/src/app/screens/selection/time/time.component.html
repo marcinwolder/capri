@@ -40,7 +40,7 @@
     Please select how do you want to set your preferences
   </app-error-box>
   <app-error-box *ngIf="nextClicked&&!rodoAccepted">
-    Please consent to your personal data being processed by CITA System
+    Please consent to your personal data being processed by CAPRI
   </app-error-box>
 
   <div class="flex flex-wrap justify-center items-center">
@@ -60,7 +60,7 @@
     <button class="w-6 h-6 border-2 border-gray-700 mr-3 mt-1 bg-blue-500 transition-colors select-none"
             [ngClass]="{'bg-opacity-0': !rodoAccepted}" (click)="rodoAccepted=!rodoAccepted"></button>
     <span class="max-w-96">
-    I hereby consent to my personal data being processed by CITA System for the purpose of travel recommendation.
+    I hereby consent to my personal data being processed by CAPRI for the purpose of travel recommendation.
       </span>
   </div>
 </div>

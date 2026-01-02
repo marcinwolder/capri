@@ -1,6 +1,6 @@
 # Ta (Angular + Electron)
 
-This package hosts the Angular 16 client that powers CITA System. You can now run it as a traditional browser SPA or bundle it into desktop apps with Electron.
+This package hosts the Angular 16 client that powers CAPRI. You can now run it as a traditional browser SPA or bundle it into desktop apps with Electron.
 
 ## Prerequisites
 

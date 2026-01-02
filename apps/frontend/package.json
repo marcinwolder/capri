@@ -1,5 +1,5 @@
 {
-  "name": "cita-system",
+  "name": "capri",
   "version": "0.1.0",
   "main": "electron/main.js",
   "scripts": {
@@ -52,8 +52,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.citasystem.ta",
-    "productName": "CITA System",
+    "appId": "com.capri.ta",
+    "productName": "CAPRI",
     "files": [
       "dist/ta/**/*",
       "electron/**/*",

@@ -1713,7 +1713,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cita-system-back"
+name = "capri-back"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
