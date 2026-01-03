@@ -27,6 +27,11 @@ db = DataBase()
 db_trips = DataBaseTrips()
 
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+	return jsonify({'success': True}), 200
+
+
 @app.route('/api/trip-history', methods=['GET'])
 def trip_history():
 	try:

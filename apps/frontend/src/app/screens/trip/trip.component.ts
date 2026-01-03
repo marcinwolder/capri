@@ -34,6 +34,7 @@ export class TripComponent implements OnInit{
   backendOffline$!: Observable<boolean>;
   llamaOffline$!: Observable<boolean>;
   serviceStatus$!: Observable<{ backendOffline: boolean; llamaOffline: boolean }>;
+  checkingServices$!: Observable<boolean>;
   backendHost = environment.backendHost.replace(/\/$/, '');
   llamaHost = environment.llamaHost.replace(/\/$/, '');
 
@@ -41,6 +42,7 @@ export class TripComponent implements OnInit{
               private restaurantsService: RestaurantsService, private serviceStatus: ServiceStatusService) {
     this.backendOffline$ = this.serviceStatus.backendOffline$;
     this.llamaOffline$ = this.serviceStatus.llamaOffline$;
+    this.checkingServices$ = this.serviceStatus.checking$;
     this.serviceStatus$ = combineLatest([this.backendOffline$, this.llamaOffline$]).pipe(
       map(([backendOffline, llamaOffline]) => ({backendOffline, llamaOffline}))
     );
@@ -160,6 +162,10 @@ export class TripComponent implements OnInit{
     this.tripReady = false;
     this.checklistCompleted = false;
     this.cancelChecklist = false;
+  }
+
+  retryServices(): void {
+    this.serviceStatus.retryNow();
   }
 
   protected readonly Number = Number;

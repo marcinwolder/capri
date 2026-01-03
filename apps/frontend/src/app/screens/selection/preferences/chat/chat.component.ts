@@ -21,6 +21,7 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   serviceStatus$!: Observable<{ backendOffline: boolean; llamaOffline: boolean }>;
+  checkingServices$!: Observable<boolean>;
   backendHost = environment.backendHost.replace(/\/$/, '');
   llamaHost = environment.llamaHost.replace(/\/$/, '');
   private statusSubscription?: Subscription;
@@ -33,6 +34,7 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     ]).pipe(
       map(([backendOffline, llamaOffline]) => ({backendOffline, llamaOffline}))
     );
+    this.checkingServices$ = this.serviceStatus.checking$;
 
     this.statusSubscription = this.serviceStatus$.subscribe(status => {
       this.isOffline = status.backendOffline || status.llamaOffline;
@@ -129,5 +131,9 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     const target = e.target as HTMLTextAreaElement;
     target.style.height = "40px";
     target.style.height = (target.scrollHeight + 2) + "px";
+  }
+
+  retryServices(): void {
+    this.serviceStatus.retryNow();
   }
 }
