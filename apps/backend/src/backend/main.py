@@ -16,6 +16,7 @@ from src.backend.get_trip_history import (
 )
 from src.data_model import UserPreferences
 from src.database import DataBase, DataBaseTrips
+from src.api_calls.llama import Llama
 
 app = Flask(__name__)
 # Allow Angular dev server plus Electron's ephemeral 127.0.0.1:<random-port> origin.
@@ -202,6 +203,113 @@ def get_with_categories_wibit():
 		logging.exception(e.__str__())
 		return jsonify({'status': 'error', 'received_data': e.__str__()})
 
+	return jsonify({'status': 'success', 'received_data': recommendation})
+
+
+def _build_recommendation_from_free_text(data: dict, use_wibit: bool):
+	categories = [category for category in data['preferences']['categories'].keys()]
+	subcategories = data['preferences']['categories']
+	dates = [datetime.strptime(date, '%Y-%m-%d').date() for date in data['dates']]
+	dates_tuple = (dates[0], dates[1])
+	user_specified_needs = UserPreferences(
+		data['preferences']['money'],
+		categories,
+		subcategories,
+		data['preferences'].get('restaurant_categories', []),
+		data['preferences'].get('needs', []),
+	)
+	if use_wibit:
+		return get_recommendations_wibit(
+			db,
+			db_trips,
+			data['city_id'],
+			data['days'],
+			dates_tuple,
+			user_specified_needs,
+		)
+	return get_recommendations(
+		db,
+		db_trips,
+		data['city_id'],
+		data['days'],
+		dates_tuple,
+		user_specified_needs,
+	)
+
+
+@app.route('/api/recommendation/messages', methods=['POST'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
+def get_with_messages():
+	data = request.json
+	if not data:
+		return jsonify({'status': 'error', 'message': 'No data in the request'})
+	preferences = Llama.get_preferences_from_messages(data.get('preferences', []))
+	data['preferences'] = preferences
+	try:
+		recommendation = _build_recommendation_from_free_text(data, use_wibit=False)
+	except Exception as e:
+		logging.exception(e.__str__())
+		return jsonify({'status': 'error', 'received_data': e.__str__()})
+	return jsonify({'status': 'success', 'received_data': recommendation})
+
+
+@app.route('/api/recommendation/note', methods=['POST'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
+def get_with_note():
+	data = request.json
+	if not data:
+		return jsonify({'status': 'error', 'message': 'No data in the request'})
+	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	data['preferences'] = preferences
+	try:
+		recommendation = _build_recommendation_from_free_text(data, use_wibit=False)
+	except Exception as e:
+		logging.exception(e.__str__())
+		return jsonify({'status': 'error', 'received_data': e.__str__()})
+	return jsonify({'status': 'success', 'received_data': recommendation})
+
+
+@app.route('/api/recommendation/wibit/messages', methods=['POST'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
+def get_with_messages_wibit():
+	data = request.json
+	if not data:
+		return jsonify({'status': 'error', 'message': 'No data in the request'})
+	preferences = Llama.get_preferences_from_messages(data.get('preferences', []))
+	data['preferences'] = preferences
+	try:
+		recommendation = _build_recommendation_from_free_text(data, use_wibit=True)
+	except Exception as e:
+		logging.exception(e.__str__())
+		return jsonify({'status': 'error', 'received_data': e.__str__()})
+	return jsonify({'status': 'success', 'received_data': recommendation})
+
+
+@app.route('/api/recommendation/wibit/note', methods=['POST'])
+@cross_origin(
+	origins=ALLOWED_ORIGINS,
+	allow_headers=['Content-Type', 'Authorization'],
+)
+def get_with_note_wibit():
+	data = request.json
+	if not data:
+		return jsonify({'status': 'error', 'message': 'No data in the request'})
+	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	data['preferences'] = preferences
+	try:
+		recommendation = _build_recommendation_from_free_text(data, use_wibit=True)
+	except Exception as e:
+		logging.exception(e.__str__())
+		return jsonify({'status': 'error', 'received_data': e.__str__()})
 	return jsonify({'status': 'success', 'received_data': recommendation})
 
 

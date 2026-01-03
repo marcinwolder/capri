@@ -1,22 +1,43 @@
-import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ChatService} from "../../../../services/chat.service";
 import {ChatMessage} from "../../../../data-model/chatMessage";
 import {Router} from "@angular/router";
 import {DestinationService} from "../../../../services/destination.service";
 import {Categories} from "../../../../data-model/categories";
 import {RecommendationService} from "../../../../services/recommendation.service";
+import {ServiceStatusService} from "../../../../services/service-status.service";
+import {combineLatest, map, Observable, Subscription} from "rxjs";
+import {environment} from "../../../../../environments/environment";
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   constructor(private _router: Router, private destinationService: DestinationService,
-              private chatService: ChatService, private recommendationService: RecommendationService) {
+              private chatService: ChatService, private recommendationService: RecommendationService,
+              private serviceStatus: ServiceStatusService) {
   }
 
+  serviceStatus$!: Observable<{ backendOffline: boolean; llamaOffline: boolean }>;
+  backendHost = environment.backendHost.replace(/\/$/, '');
+  llamaHost = environment.llamaHost.replace(/\/$/, '');
+  private statusSubscription?: Subscription;
+  private isOffline = false;
+
   ngOnInit(): void {
+    this.serviceStatus$ = combineLatest([
+      this.serviceStatus.backendOffline$,
+      this.serviceStatus.llamaOffline$
+    ]).pipe(
+      map(([backendOffline, llamaOffline]) => ({backendOffline, llamaOffline}))
+    );
+
+    this.statusSubscription = this.serviceStatus$.subscribe(status => {
+      this.isOffline = status.backendOffline || status.llamaOffline;
+    });
+
     this.destinationService.setNextFunction(() => {
       this.recommendationService.setMessages(this.messages)
       this._router.navigate(['trip']);
@@ -40,6 +61,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   userMessage: string = '';
   writingMessage: boolean = false;
 
+  ngOnDestroy(): void {
+    this.statusSubscription?.unsubscribe();
+  }
+
   ngAfterViewChecked() {
     if (!this.isUserScrolling) {
       this.scrollToBottom();
@@ -59,7 +84,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   async sendChatMessage(): Promise<void> {
-    if (!this.userMessage.trim() || this.writingMessage) {
+    if (!this.userMessage.trim() || this.writingMessage || this.isOffline) {
       return;
     }
     this.messages.push({
@@ -67,14 +92,26 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       role: 'user'
     });
     this.userMessage = '';
-    this.messages.push({
+    this.writingMessage = true;
+    const assistantMessage: ChatMessage = {
       content: '',
       role: 'assistant'
-    });
-    this.writingMessage = true;
-    this.chatService.streamChatCompletions(this.messages.slice(0, -1)).subscribe({
-      next: (content) => this.messages[this.messages.length - 1].content += content || '',
-      error: (error) => this.messages[this.messages.length - 1].content += error,
+    };
+    let assistantIndex = -1;
+    this.chatService.streamChatCompletions(this.messages).subscribe({
+      next: (content) => {
+        if (assistantIndex === -1) {
+          this.messages.push(assistantMessage);
+          assistantIndex = this.messages.length - 1;
+        }
+        this.messages[assistantIndex].content += content || '';
+      },
+      error: () => {
+        if (assistantIndex > -1) {
+          this.messages.splice(assistantIndex, 1);
+        }
+        this.writingMessage = false;
+      },
       complete: () => this.writingMessage = false
     });
   }

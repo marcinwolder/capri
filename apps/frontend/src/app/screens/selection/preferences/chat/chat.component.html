@@ -1,55 +1,83 @@
 <div class="flex flex-col antialiased text-gray-800 h-full relative pt-2">
-
-  <div class="flex flex-col flex-auto rounded-2xl bg-gray-100 bg-opacity-80
-              p-4 overflow-x-hidden m-2 xl:m-0 xl:mb-10 lg:mx-10 xl:mx-0">
-
-    <div #scrollContainer class="flex flex-col h-full overflow-x-auto mb-4"
-         (scroll)="onUserScroll()">
-    <div *ngFor="let message of messages; index as i" class="p-3 rounded-lg">
-        <div class="flex flex-row items-center"
-             [ngClass]="{'justify-start flex-row-reverse': message.role==='user'}">
-          <div
-            class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-            <i class="fa-solid text-white"
-               [ngClass]="{'fa-robot': message.role==='assistant',
-                           'fa-user': message.role==='user'}"></i>
+  <ng-container *ngIf="serviceStatus$ | async as status">
+    <div class="flex flex-col flex-auto rounded-2xl bg-gray-100 bg-opacity-80
+                p-4 overflow-x-hidden m-2 xl:m-0 xl:mb-10 lg:mx-10 xl:mx-0"
+         [ngClass]="{'opacity-60 pointer-events-none': status.backendOffline || status.llamaOffline}">
+      <div #scrollContainer class="flex flex-col h-full overflow-x-auto mb-4"
+           (scroll)="onUserScroll()">
+        <div *ngFor="let message of messages; index as i" class="p-3 rounded-lg">
+          <div class="flex flex-row items-center"
+               [ngClass]="{'justify-start flex-row-reverse': message.role==='user'}">
+            <div
+              class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+              <i class="fa-solid text-white"
+                 [ngClass]="{'fa-robot': message.role==='assistant',
+                             'fa-user': message.role==='user'}"></i>
+            </div>
+            <div
+              class="relative mx-3 text-sm py-2 px-4 shadow rounded-xl max-w-xl min-h-9"
+              [ngClass]="{'bg-indigo-100': message.role==='user',
+                          'bg-white': message.role==='assistant'}">
+              <div class="whitespace-pre-line">
+                {{ message.content }}
+                <span *ngIf="i===messages.length-1&&message.role==='assistant'&&writingMessage"
+                      class="blinking-cursor bg-gray-700 text-gray-700">|</span>
+              </div>
+            </div>
           </div>
-          <div
-            class="relative mx-3 text-sm py-2 px-4 shadow rounded-xl max-w-xl min-h-9"
-            [ngClass]="{'bg-indigo-100': message.role==='user',
-                        'bg-white': message.role==='assistant'}">
-            <div class="whitespace-pre-line">
-              {{ message.content }}
-              <span *ngIf="i===messages.length-1&&message.role==='assistant'&&writingMessage"
-                    class="blinking-cursor bg-gray-700 text-gray-700">|</span>
+        </div>
+      </div>
+
+      <div class="flex items-center py-2 rounded-xl bg-white w-full px-4 select-none max-w-full">
+        <div class="flex-grow max-w-full">
+          <textarea
+            class="w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10 m-0
+                  overflow-hidden resize-none block py-1"
+            placeholder="Type a message..."
+            [disabled]="status.backendOffline || status.llamaOffline"
+            [(ngModel)]="userMessage"
+            (keydown.enter)="handleEnter($event)"
+            (keyup)="autoGrowTextZone($event)"></textarea>
+        </div>
+        <div class="ml-4">
+          <button
+            class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600
+                   rounded-xl text-white px-3 py-1 flex-shrink-0"
+            [disabled]="status.backendOffline || status.llamaOffline"
+            [ngClass]="{'opacity-50': writingMessage || status.backendOffline || status.llamaOffline}"
+            (click)="sendChatMessage()">
+            <span class="hidden lg:inline mr-2">Send</span>
+            <i class="fa-solid fa-paper-plane py-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="status.backendOffline || status.llamaOffline"
+         class="absolute inset-0 z-20 flex items-center justify-center px-4">
+      <div class="w-full max-w-3xl rounded-2xl border border-amber-200 bg-amber-50/95 p-6 shadow-lg">
+        <div class="flex items-center text-amber-900 text-lg font-semibold">
+          <i class="fa-solid fa-triangle-exclamation mr-3"></i>
+          Service offline
+        </div>
+        <p class="mt-2 text-amber-900/80">
+          We can’t reach the local services. Start them and try again.
+        </p>
+        <div class="mt-4 space-y-3">
+          <div *ngIf="status.backendOffline" class="rounded-xl border border-amber-200 bg-white/70 p-4">
+            <div class="font-semibold text-amber-900">Backend offline ({{ backendHost }})</div>
+            <div class="text-amber-900/80 mt-1">
+              Start it with <span class="font-mono">docker compose up -d --build</span>.
+            </div>
+          </div>
+          <div *ngIf="status.llamaOffline" class="rounded-xl border border-amber-200 bg-white/70 p-4">
+            <div class="font-semibold text-amber-900">LLM offline ({{ llamaHost }})</div>
+            <div class="text-amber-900/80 mt-1">
+              Start it with <span class="font-mono">docker compose up -d --build</span>.
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div
-      class="flex items-center py-2 rounded-xl bg-white w-full px-4 select-none max-w-full">
-      <div class="flex-grow max-w-full">
-              <textarea
-                class="w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10 m-0
-                      overflow-hidden resize-none block py-1"
-                placeholder="Type a message..."
-                [(ngModel)]="userMessage"
-                (keydown.enter)="handleEnter($event)"
-                (keyup)="autoGrowTextZone($event)"></textarea>
-      </div>
-      <div class="ml-4">
-        <button
-          class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600
-                 rounded-xl text-white px-3 py-1 flex-shrink-0"
-          [ngClass]="{'opacity-50': writingMessage}"
-          (click)="sendChatMessage()">
-          <span class="hidden lg:inline mr-2">Send</span>
-          <i class="fa-solid fa-paper-plane py-2"></i>
-        </button>
-      </div>
-    </div>
-
-  </div>
+  </ng-container>
 </div>

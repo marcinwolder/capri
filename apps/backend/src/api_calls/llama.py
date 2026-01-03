@@ -3,10 +3,13 @@ import logging
 import os
 import re
 from collections import Counter
+from typing import Any, Iterable
 
 import requests
 
 from src.data_model.places.places import Places
+from src.constants import all_categories, default_categories, default_subcategories
+from src.constants import dining_subcategories
 
 SUMMARY_PROMPT = """
 <ROLE>
@@ -225,3 +228,113 @@ class Llama:
 		except Exception as e:
 			logging.exception(e.__str__())
 			return ''
+
+	@staticmethod
+	def _normalize_preferences(raw: dict[str, Any]) -> dict[str, Any]:
+		money = raw.get('money', 1)
+		try:
+			money = int(money)
+		except (TypeError, ValueError):
+			money = 1
+		money = min(max(money, 0), 3)
+
+		needs = raw.get('needs', [])
+		if not isinstance(needs, list):
+			needs = []
+		allowed_needs = {
+			'wheelchairAccessible',
+			'goodForGroups',
+			'vegan',
+			'children',
+			'alcohol',
+			'allowsDogs',
+		}
+		needs = [need for need in needs if need in allowed_needs]
+
+		categories_map = raw.get('categories', {})
+		if not isinstance(categories_map, dict):
+			categories_map = {}
+
+		clean_categories: dict[str, list[str]] = {}
+		for category, subcats in categories_map.items():
+			if category not in all_categories:
+				continue
+			if not isinstance(subcats, list):
+				subcats = []
+			allowed_subcats = set(default_subcategories.get(category, []))
+			clean_subcats = [
+				subcat for subcat in subcats if subcat in allowed_subcats
+			]
+			clean_categories[category] = clean_subcats
+
+		if not clean_categories:
+			clean_categories = {category: [] for category in default_categories}
+
+		restaurant_categories = raw.get('restaurant_categories', [])
+		if not isinstance(restaurant_categories, list):
+			restaurant_categories = []
+		allowed_restaurants = set(dining_subcategories.keys())
+		restaurant_categories = [
+			category
+			for category in restaurant_categories
+			if category in allowed_restaurants
+		]
+
+		return {
+			'money': money,
+			'categories': clean_categories,
+			'restaurant_categories': restaurant_categories,
+			'needs': needs,
+		}
+
+	@staticmethod
+	def _build_transcript_text(messages: Iterable[dict[str, Any]]) -> str:
+		parts: list[str] = []
+		for message in messages or []:
+			if not isinstance(message, dict):
+				continue
+			role = str(message.get('role', 'unknown')).strip()
+			content = str(message.get('content', '')).strip()
+			if not content:
+				continue
+			parts.append(f'{role}: {content}')
+		return '\n'.join(parts)
+
+	@classmethod
+	def get_preferences_from_text(cls, text: str) -> dict[str, Any]:
+		prompt = (
+			'You are a travel preferences extractor. Return JSON only with keys: '
+			'money (0-3 integer), categories (object mapping category to subcategories array), '
+			'restaurant_categories (array), needs (array of '
+			'[wheelchairAccessible, goodForGroups, vegan, children, alcohol, allowsDogs]). '
+			'Use only known categories and subcategories. If unsure, leave empty arrays.'
+		)
+		try:
+			response = requests.post(
+				cls.API_URL,
+				json={
+					'messages': [
+						{'role': 'system', 'content': prompt},
+						{'role': 'user', 'content': text},
+					],
+					'max_tokens': 300,
+					'temperature': 0.2,
+				},
+				timeout=10,
+			)
+			if response.encoding is None:
+				response.encoding = 'utf-8'
+			response_dict = json.loads(response.text)
+			content = response_dict['choices'][0]['message']['content']
+			parsed = json.loads(content)
+			if not isinstance(parsed, dict):
+				raise ValueError('LLM output is not a JSON object.')
+			return cls._normalize_preferences(parsed)
+		except Exception as exc:
+			logging.exception(exc.__str__())
+			return cls._normalize_preferences({})
+
+	@classmethod
+	def get_preferences_from_messages(cls, messages: list[dict[str, Any]]) -> dict[str, Any]:
+		text = cls._build_transcript_text(messages)
+		return cls.get_preferences_from_text(text)
