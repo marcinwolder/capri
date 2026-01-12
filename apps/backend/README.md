@@ -31,3 +31,4 @@ uv run pylint src
 ## Notes
 
 - External assets (e.g., spaCy `en_core_web_sm`, GoogleNews vectors) are required for some NLP flows; install them as needed.
+- To ship the API without live Google Places calls, pre-generate JSON caches with `uv run python -m scripts.prefetch_places --city <CITY_ID> [...]`. The script accepts repeated `--city` flags or `--city-file`, respects `GOOGLE_PLACES_API_KEY`, and writes to `apps/backend/data/places` (or `--data-dir`). Commit the resulting files if you want them bundled with the backend.
