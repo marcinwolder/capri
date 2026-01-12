@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+
 set -euo pipefail
 
 MODEL_PATH="${MODEL_PATH:-/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf}"
