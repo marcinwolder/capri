@@ -2,40 +2,18 @@
 
 ## Wymagania
 
-- Windows: Windows 10/11 z włączoną wirtualizacją, WSL2 i Docker Desktop (dla pracy z Dockerem).
-- macOS: macOS 12+ (Intel lub Apple Silicon) z włączoną wirtualizacją i Docker Desktop (albo innym silnikiem Docker z `docker compose`).
+Windows 10/11 z wlaczona wirtualizacja, WSL2 i Docker Desktop (dla uruchomienia obrazu backend + llama).
 
-## Backend + llama przez Docker (zalecane)
+## Instalacja krok po kroku
 
-1) Sklonuj repo i skopiuj plik env:
-
-   ```powershell
-   # Windows PowerShell
-   git clone <repo> capri
-   cd capri
-   copy apps\backend\.env.example apps\backend\.env
-   ```
-
-   ```bash
-   # macOS / zsh lub bash
-   git clone <repo> capri
-   cd capri
-   cp apps/backend/.env.example apps/backend/.env
-   ```
-
-2) Uzupełnij `apps\backend\.env` (klucz Google Places API).
-3) Uruchom:
+1) Zainstaluj aplikacje CAPRI Desktop uruchamiajac instalator `CAPRI Setup 0.1.0.exe`. Postepuj wedlug kreatora instalacji i upewnij sie, ze aplikacja startuje poprawnie.
+2) Rozpakuj paczke z backendem (`capri.zip`) do katalogu roboczego (np. `C:\capri`). W folderze powinny znalezc sie pliki projektu wraz z `docker-compose.yml`.
+3) W rozpakowanym folderze uruchom:
 
    ```powershell
-   # Windows PowerShell
-   docker compose up --build
+   docker compose up
    ```
 
-   ```bash
-   # macOS / zsh lub bash
-   docker compose up --build
-   ```
+## Rezultat
 
-4) Oczekiwane:
-   - Backend: <http://localhost:5000>
-   - Llama: <http://localhost:3000> (przy pierwszym uruchomieniu pobiera ~600MB do `apps/llama/models`)
+Polecenie wystartuje backend pod adresem <http://localhost:5000> oraz serwis Llama pod <http://localhost:3000>. Pierwsze uruchomienie moze pobrac ~600MB modelu do `apps/llama/models`.
