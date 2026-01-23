@@ -68,3 +68,36 @@ In this file you can find things that should be done in this project. It is not 
   - **What is wrong**: There is no approved email summarizing the prompt sent to the LLM.
   - **Why is it bad**: Stakeholders cannot review or sign off on prompt wording before use.
   - **Proposed solution**: Draft an approval email that outlines the LLM prompt, circulate it, and capture sign-off.
+
+---
+
+- [ ] BUG
+
+	```python
+	places <src.data_model.places.places.Places object at 0xffff59637c50> <class 'src.data_model.places.places.Places'>
+	places <src.data_model.places.places.Places object at 0xffff59635d10> <class 'src.data_model.places.places.Places'>
+	/app/src/ml_operations/kmeans_constrained.py:16: RuntimeWarning: invalid value encountered in divide
+	probabilities = distances**2 / np.sum(distances**2)
+	ERROR:root:probabilities contain NaN
+	Traceback (most recent call last):
+	File "/app/src/backend/main.py", line 160, in get_with_categories
+		recommendation = get_recommendations(
+						^^^^^^^^^^^^^^^^^^^^
+	File "/app/src/backend/get_recommendation.py", line 89, in get_recommendations
+		recommendation = Recommendation(places=places_list, user=user).get_recommendation()
+						^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	File "/app/src/recommendation/recommendation.py", line 77, in get_recommendation
+		clustered_places = splitForDays.split()
+						^^^^^^^^^^^^^^^^^^^^
+	File "/app/src/route_optimalization/split_for_days.py", line 76, in split
+		centroids, cluster_assignment, w_averages = constrained_kmeans(
+													^^^^^^^^^^^^^^^^^^^
+	File "/app/src/ml_operations/kmeans_constrained.py", line 29, in constrained_kmeans
+		centroids = initialize_centroids_kmeans_plusplus(data, k)
+					^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	File "/app/src/ml_operations/kmeans_constrained.py", line 18, in initialize_centroids_kmeans_plusplus
+		centroids[i] = data[np.random.choice(n, p=probabilities)]
+							^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	File "numpy/random/mtrand.pyx", line 971, in numpy.random.mtrand.RandomState.choice
+	ValueError: probabilities contain NaN
+	```

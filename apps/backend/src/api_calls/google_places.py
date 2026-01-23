@@ -93,9 +93,13 @@ def get_restaurants_for_city(
 		included_types=included_types,
 	).json()
 	try:
-		if search_results['places'] is None:
-			print('No places found')
-		for result in search_results['places']:
+		if search_results.get('error'):
+			logging.error('Google Places API error: %s', search_results.get('error'))
+			return Places([], city)
+		places_results = search_results.get('places') or []
+		if not places_results:
+			logging.info('No places found for city=%s', city.name)
+		for result in places_results:
 			place = PlaceCreatorAPI(result, city).create_place()
 			if not RestaurantVisitor().is_suitable(
 				place=place, population=city.population
@@ -133,18 +137,27 @@ def get_places_for_city(
 	places_list = []
 	places_raw = []
 	placeVisitor = placeVisitor()
+	total_candidates = 0
+	total_kept = 0
 
 	def process_search_results(search_results):
+		nonlocal total_candidates, total_kept
 		try:
+			if search_results.get('error'):
+				logging.error('Google Places API error: %s', search_results.get('error'))
+				return
+			places_results = search_results.get('places') or []
 			if save_raw:
-				places_raw.extend(search_results['places'])
-			for result in search_results['places']:
+				places_raw.extend(places_results)
+			for result in places_results:
+				total_candidates += 1
 				place = placeCreator(result, city).create_place()
 				if not placeVisitor.is_suitable(
 					place=place, population=city.population
 				):
 					continue
 				places_list.append(place)
+				total_kept += 1
 		except KeyError:
 			logging.exception('KeyError: %s', search_results)
 
@@ -157,18 +170,29 @@ def get_places_for_city(
 		).json()
 	)
 	for category in search_categories:
-		search_results = nearby_search(
-			location=(city.lat, city.lng),
-			included_primary_types=category,
-			excluded_types=excluded_categories,
-			radius=city.get_radius(),
-		).json()
+		search_kwargs = {
+			'location': (city.lat, city.lng),
+			'excluded_types': excluded_categories,
+			'radius': city.get_radius(),
+		}
+		if category == 'night_club':
+			search_kwargs['included_types'] = ['night_club']
+		else:
+			search_kwargs['included_primary_types'] = category
+		search_results = nearby_search(**search_kwargs).json()
 		process_search_results(search_results)
 	if save_raw:
 		with open(get_path('raw.json', 'data'), 'w') as f:
 			json.dump(places_raw, f, default=vars)
 	places = Places(places_list, city)
 	StatisticalRating(places).calculate_statistical_rating()
+	logging.info(
+		'Google Places candidates=%s kept=%s city=%s categories=%s',
+		total_candidates,
+		total_kept,
+		city.name,
+		len(search_categories),
+	)
 
 	if db is not None:
 		placeVisitor.save_places_to_database(db, places, city, default_categories)

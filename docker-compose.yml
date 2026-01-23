@@ -6,7 +6,7 @@ services:
     env_file:
       - apps/backend/.env
     ports:
-      - 5000:5000
+      - 5001:5001
     restart: unless-stopped
     volumes:
       - ./apps/backend/data:/app/data
@@ -15,7 +15,7 @@ services:
         - CMD
         - python
         - -c
-        - "import socket; socket.create_connection(('localhost', 5000), 3)"
+        - "import socket; socket.create_connection(('localhost', 5001), 3)"
       interval: 30s
       timeout: 10s
       retries: 5
@@ -29,9 +29,10 @@ services:
     cap_add:
       - SYS_RESOURCE
     environment:
-      MODEL_URL: "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf"
-      MODEL_PATH: "/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf"
+      MODEL_URL: "https://huggingface.co/MaziyarPanahi/Llama-3-8B-Instruct-64k-GGUF/resolve/main/Llama-3-8B-Instruct-64k.Q4_K_M.gguf"
+      MODEL_PATH: "/models/Llama-3-8B-Instruct-64k.Q4_K_M.gguf"
       # MODEL_SHA256: ""  # optional integrity check
+    command: ["--model", "/models/Llama-3-8B-Instruct-64k.Q4_K_M.gguf", "--host", "0.0.0.0", "--port", "3000"]
     ports:
       - 3000:3000/tcp
     volumes:

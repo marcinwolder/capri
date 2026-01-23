@@ -271,6 +271,10 @@ def get_with_note():
 	if not data:
 		return jsonify({'status': 'error', 'message': 'No data in the request'})
 	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	logging.info(
+		'Preferences extracted from note: %s',
+		preferences,
+	)
 	data['preferences'] = preferences
 	try:
 		recommendation = _build_recommendation_from_free_text(data, use_wibit=False)
@@ -309,6 +313,10 @@ def get_with_note_wibit():
 	if not data:
 		return jsonify({'status': 'error', 'message': 'No data in the request'})
 	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	logging.info(
+		'Preferences extracted from note (wibit): %s',
+		preferences,
+	)
 	data['preferences'] = preferences
 	try:
 		recommendation = _build_recommendation_from_free_text(data, use_wibit=True)
