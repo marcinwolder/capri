@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {catchError, map, Observable, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
-import {Trip} from "../data-model/trip";
+import {Trip, TripSurvey} from "../data-model/trip";
 import {TripOverview} from "../data-model/tripOverview";
 
 interface TripHistoryResponse {
@@ -13,6 +13,11 @@ interface TripHistoryResponse {
 interface TripHistoryOverviewResponse {
   data: TripOverview[];
   success: boolean;
+}
+
+interface TripSurveyResponse {
+  success: boolean;
+  data?: TripSurvey;
 }
 
 interface BatchDeleteResponse {
@@ -70,6 +75,21 @@ export class TripHistoryService {
       catchError(error => {
         console.error('Error rating attraction:', error);
         return of(false);
+      })
+    );
+  }
+
+  submitTripSurvey(tripId: string, payload: {
+    sus_answers: number[];
+    csat: number;
+    nps: number;
+    subjective_answers: number[];
+  }): Observable<TripSurvey | null> {
+    return this.http.post<TripSurveyResponse>(`${environment.backendHost}api/trip-history/${tripId}/survey`, payload).pipe(
+      map(response => response.success ? (response.data || null) : null),
+      catchError(error => {
+        console.error('Error submitting trip survey:', error);
+        return of(null);
       })
     );
   }

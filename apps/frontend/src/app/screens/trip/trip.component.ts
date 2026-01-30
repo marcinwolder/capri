@@ -10,6 +10,7 @@ import {categories} from "../../constants/categories";
 import {categories_restaurant} from "../../constants/categories_restaurant";
 import {ServiceStatusService} from "../../services/service-status.service";
 import {combineLatest, map, Observable} from "rxjs";
+import {TripSurvey} from "../../data-model/trip";
 
 
 interface AttractionField extends Place {
@@ -63,6 +64,7 @@ export class TripComponent implements OnInit{
         this.finishLoading();
         this.tripId = trip.id;
         this.city_id = trip.city_id;
+        this.loadSurveyFromTrip(trip.survey);
       },
       error: (error: Error) => {
         this.error = error.message;
@@ -96,6 +98,35 @@ export class TripComponent implements OnInit{
   showMap = false;
   weatherForecasts: number[] = [];
   city_id?: string;
+  tripSurvey?: TripSurvey;
+
+  susQuestions: string[] = [
+    'I think that I would like to use this system frequently.',
+    'I found the system unnecessarily complex.',
+    'I thought the system was easy to use.',
+    'I think that I would need the support of a technical person to be able to use this system.',
+    'I found the various functions in this system were well integrated.',
+    'I thought there was too much inconsistency in this system.',
+    'I would imagine that most people would learn to use this system very quickly.',
+    'I found the system very cumbersome to use.',
+    'I felt very confident using the system.',
+    'I needed to learn a lot of things before I could get going with this system.'
+  ];
+  subjectiveQuestions: string[] = [
+    'Overall quality of the trip itinerary.',
+    'How well the itinerary matched your preferences.',
+    'Variety of attractions in the itinerary.',
+    'Pace and schedule balance.',
+    'Clarity of the itinerary.'
+  ];
+
+  susAnswers: Array<number | null> = [];
+  subjectiveAnswers: Array<number | null> = [];
+  csat: number | undefined = undefined;
+  nps: number | null = null;
+  surveySaving = false;
+  surveyError?: string;
+  surveySuccess = false;
 
   getImageUrl(place: Place): string {
     const backendHost = environment.backendHost.endsWith('/')
@@ -134,6 +165,30 @@ export class TripComponent implements OnInit{
     this.tripHistoryService.rateTripAttraction(this.tripId!, day_index, att_index, rating).subscribe();
   }
 
+  submitSurvey(): void {
+    if (!this.tripId || !this.isSurveyComplete()) {
+      return;
+    }
+    this.surveySaving = true;
+    this.surveyError = undefined;
+    this.surveySuccess = false;
+    const payload = {
+      sus_answers: this.susAnswers.map(value => value as number),
+      csat: this.csat as number,
+      nps: this.nps as number,
+      subjective_answers: this.subjectiveAnswers.map(value => value as number),
+    };
+    this.tripHistoryService.submitTripSurvey(this.tripId, payload).subscribe(result => {
+      this.surveySaving = false;
+      if (!result) {
+        this.surveyError = 'Unable to save survey responses.';
+        return;
+      }
+      this.tripSurvey = result;
+      this.surveySuccess = true;
+    });
+  }
+
   searchRestaurants(place: Place) {
     this.restaurantsService.getRestaurants(this.city_id!, place).subscribe({
       next: (data) => {
@@ -162,6 +217,35 @@ export class TripComponent implements OnInit{
     this.tripReady = false;
     this.checklistCompleted = false;
     this.cancelChecklist = false;
+  }
+
+  private loadSurveyFromTrip(survey?: TripSurvey): void {
+    this.tripSurvey = survey;
+    this.susAnswers = new Array(this.susQuestions.length).fill(null);
+    this.subjectiveAnswers = new Array(this.subjectiveQuestions.length).fill(null);
+    this.csat = undefined;
+    this.nps = null;
+    if (!survey) {
+      return;
+    }
+    if (survey.sus?.answers?.length === this.susQuestions.length) {
+      this.susAnswers = survey.sus.answers.map(answer => answer);
+    }
+    if (survey.subjective?.answers?.length === this.subjectiveQuestions.length) {
+      this.subjectiveAnswers = survey.subjective.answers.map(answer => answer);
+    }
+    if (typeof survey.csat === 'number') {
+      this.csat = survey.csat;
+    }
+    if (typeof survey.nps === 'number') {
+      this.nps = survey.nps;
+    }
+  }
+
+  isSurveyComplete(): boolean {
+    const susComplete = this.susAnswers.every(value => typeof value === 'number');
+    const subjectiveComplete = this.subjectiveAnswers.every(value => typeof value === 'number');
+    return susComplete && subjectiveComplete && typeof this.csat === 'number' && typeof this.nps === 'number';
   }
 
   retryServices(): void {
