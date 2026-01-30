@@ -40,6 +40,7 @@ class Recommendation:
 		self.dates = user.dates
 		self.weather = []
 		self.transportations = []
+		self.weekday_indices = []
 
 	def check_good_hours(self):
 		for day in range(7):
@@ -74,6 +75,7 @@ class Recommendation:
 			to_date=self.dates[1],
 			places=places_positive_rating,
 		)
+		self.weekday_indices = splitForDays.weekday_indices
 		clustered_places = splitForDays.split()
 		print('clustered_places', clustered_places)
 		path = get_path('clusters.html', 'outputs')

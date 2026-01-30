@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import Tuple
 
@@ -6,6 +7,7 @@ from src.data_model.city.city import City
 from src.data_model.user.user_info import TripInfo
 from src.data_model.user.user_preferences import UserPreferences
 from src.database import DataBase, DataBaseTrips
+from src.metrics import build_trip_day_metrics, weekday_indices_from_dates, write_trip_metrics_csv
 from src.recommendation_wibit import recommend_itinerary
 
 
@@ -31,4 +33,25 @@ def get_recommendations_wibit(
 	itinerary['id'] = trip_id
 	itinerary['city_name'] = city.name
 	itinerary['city_id'] = str(city.id)
+	try:
+		places_by_id = {place.placeInfo.id: place for place in places_list.get_list()}
+		places_by_day = []
+		for day in itinerary.get('days', []):
+			day_places = []
+			for place in day.get('places', []):
+				place_obj = places_by_id.get(place.get('id'))
+				if place_obj is not None:
+					day_places.append(place_obj)
+			places_by_day.append(day_places)
+		day_metrics = build_trip_day_metrics(
+			places_by_day,
+			preferences,
+			weekday_indices_from_dates(dates[0], dates[1]),
+			city=city,
+			day_start_minutes=9 * 60,
+			day_end_minutes=17 * 60,
+		)
+		write_trip_metrics_csv(trip_id, day_metrics)
+	except Exception as exc:
+		logging.exception('Failed to log trip metrics: %s', exc)
 	return itinerary

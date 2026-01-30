@@ -10,6 +10,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./apps/backend/data:/app/data
+      - ./apps/backend/logs:/app/logs
     healthcheck:
       test:
         - CMD
