@@ -1,12 +1,18 @@
 <app-background [image]="'0.jpg'"></app-background>
-<div class="inset-0 md:h-full flex flex-col justify-center items-center
-    text-white text-center select-none">
-  <div class="mt-16 md:mt-0 rounded-3xl bg-white p-4 md:p-6 shadow-2xl backdrop-blur-md">
-    <img src="assets/images/capri.png" alt="CAPRI logo"
-         class="h-36 md:h-44 lg:h-52 w-auto object-contain">
+<div class="inset-0 md:h-full flex flex-col justify-center items-center text-center select-none px-6">
+  <div class="mt-16 md:mt-0 max-w-3xl rounded-3xl bg-white/90 p-6 md:p-10 shadow-xl backdrop-blur-sm border border-slate-200">
+    <p class="text-xs tracking-[0.35em] uppercase text-slate-500">CAPRI</p>
+    <h1 class="mt-4 text-3xl md:text-4xl font-semibold text-slate-900 leading-tight">
+      Context-Aware Personalised Route &amp; Itinerary planner
+    </h1>
+    <p class="mt-4 text-base md:text-lg text-slate-600">
+      A focused, research-friendly workspace for building thoughtful academic travel plans.
+    </p>
+    <div class="mt-8 flex justify-center">
+      <button class="bg-slate-900 text-white px-6 py-3 text-base md:text-lg font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+        (click)="start()">
+        Start Planning
+      </button>
+    </div>
   </div>
-    <button class="bg-white text-black p-4 text-2xl font-semibold rounded-lg hover:bg-gray-200 transition-colors my-2"
-      (click)="start()">
-      Plan Your Trip
-    </button>
 </div>

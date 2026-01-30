@@ -1,6 +1,6 @@
 <app-background [image]="'2.jpg'" xmlns="http://www.w3.org/1999/html"></app-background>
 
-<div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-gray-900/30">
+<div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-slate-100/70">
   <ng-container *ngIf="loadingMode === 'generation'; else simpleLoader">
     <app-loading-checklist
       [cancelled]="cancelChecklist"
@@ -8,7 +8,7 @@
       [ready]="tripReady"
       (completed)="onChecklistCompleted()">
     </app-loading-checklist>
-    <p class="mt-4 text-white text-center text-lg opacity-80">
+    <p class="mt-4 text-slate-600 text-center text-lg">
       We’ll surface your itinerary as soon as these steps finish.
     </p>
   </ng-container>
@@ -20,7 +20,7 @@
       [ready]="tripReady"
       (completed)="onChecklistCompleted()">
     </app-loading-checklist>
-    <p class="mt-4 text-white text-center text-lg opacity-80">
+    <p class="mt-4 text-slate-600 text-center text-lg">
       Loading saved trip data...
     </p>
   </ng-template>

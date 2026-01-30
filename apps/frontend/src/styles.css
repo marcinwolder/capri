@@ -2,7 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
 @import '@fortawesome/fontawesome-free/css/all.css';
+
+:root {
+  color-scheme: light;
+  --capri-ink: #0f1f2e;
+  --capri-ink-contrast: #f5f7fa;
+  --capri-slate-900: #1b2533;
+  --capri-slate-700: #394658;
+  --capri-slate-500: #5e6a79;
+  --capri-slate-200: #e6eaef;
+  --capri-slate-100: #f3f5f8;
+  --capri-slate-50: #f8fafc;
+  --capri-warning: #8a6d1d;
+  --capri-warning-bg: #f5f0e6;
+  --capri-danger: #8b2a2a;
+  --capri-danger-bg: #f7e9e9;
+}
+
+html, body {
+  font-family: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background-color: var(--capri-slate-50);
+  color: var(--capri-slate-900);
+}
 
 button,
 a {
@@ -56,4 +80,70 @@ a {
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+}
+
+/* Palette overrides for a sober academic look */
+.bg-blue-500,
+.bg-blue-600,
+.bg-blue-700,
+.bg-blue-900,
+.bg-blue-950 {
+  background-color: var(--capri-ink) !important;
+}
+
+.hover\\:bg-blue-600:hover,
+.hover\\:bg-blue-700:hover,
+.hover\\:bg-blue-900:hover {
+  background-color: #13283c !important;
+}
+
+.text-blue-500,
+.text-blue-600,
+.text-indigo-500 {
+  color: var(--capri-ink) !important;
+}
+
+.border-blue-500 {
+  border-color: var(--capri-ink) !important;
+}
+
+.bg-indigo-500 {
+  background-color: var(--capri-ink) !important;
+}
+
+.bg-amber-500 {
+  background-color: var(--capri-warning) !important;
+}
+
+.hover\\:bg-amber-600:hover {
+  background-color: #7a5f18 !important;
+}
+
+.bg-amber-50 {
+  background-color: var(--capri-warning-bg) !important;
+}
+
+.text-amber-900,
+.text-amber-900\\/80,
+.text-amber-900\\/70 {
+  color: var(--capri-warning) !important;
+}
+
+.border-amber-200 {
+  border-color: #d9caa7 !important;
+}
+
+.bg-red-500,
+.bg-red-600 {
+  background-color: var(--capri-danger) !important;
+}
+
+.hover\\:bg-red-600:hover,
+.hover\\:bg-red-700:hover {
+  background-color: #7a2424 !important;
+}
+
+.text-red-600,
+.text-red-700 {
+  color: var(--capri-danger) !important;
 }
