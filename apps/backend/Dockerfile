@@ -12,6 +12,6 @@ RUN uv sync --frozen
 
 COPY src/ src/
 
-EXPOSE 5001
+EXPOSE 5000
 
-CMD ["uv", "run", "waitress-serve", "--listen=0.0.0.0:5001", "src.backend.wsgi:app"]
+CMD ["uv", "run", "waitress-serve", "--listen=0.0.0.0:5000", "src.backend.wsgi:app"]

@@ -6,7 +6,7 @@ services:
     env_file:
       - apps/backend/.env
     ports:
-      - 5001:5001
+      - 5000:5000
     restart: unless-stopped
     volumes:
       - ./apps/backend/data:/app/data
@@ -16,7 +16,7 @@ services:
         - CMD
         - python
         - -c
-        - "import socket; socket.create_connection(('localhost', 5001), 3)"
+        - "import socket; socket.create_connection(('localhost', 5000), 3)"
       interval: 30s
       timeout: 10s
       retries: 5
