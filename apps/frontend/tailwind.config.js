@@ -25,7 +25,7 @@ module.exports = {
       addBase({
         // Applying the default shadow color globally
         ':root': {
-          '--tw-shadow-color': 'rgba(99, 102, 241, 0.8)', // This is the rgba value for indigo-500 at 50% opacity
+          '--tw-shadow-color': 'rgba(15, 31, 46, 0.35)',
         },
       });
 
@@ -43,4 +43,3 @@ module.exports = {
     hoverOnlyWhenSupported: true,
   },
 }
-

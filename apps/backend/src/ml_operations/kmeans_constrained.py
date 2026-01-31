@@ -2,6 +2,8 @@ import numpy as np
 
 
 def initialize_centroids_kmeans_plusplus(data, k):
+	if data.ndim != 2 or data.shape[0] == 0:
+		return np.zeros((k, data.shape[1] if data.ndim == 2 else 0))
 	n, features = data.shape
 	centroids = np.zeros((k, features))
 
@@ -13,7 +15,11 @@ def initialize_centroids_kmeans_plusplus(data, k):
 			[min([np.linalg.norm(x - c) for c in centroids[:i]]) for x in data]
 		)
 
-		probabilities = distances**2 / np.sum(distances**2)
+		denominator = np.sum(distances**2)
+		if not np.isfinite(denominator) or denominator == 0:
+			probabilities = np.full(n, 1 / n)
+		else:
+			probabilities = distances**2 / denominator
 
 		centroids[i] = data[np.random.choice(n, p=probabilities)]
 

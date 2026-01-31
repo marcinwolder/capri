@@ -12,6 +12,7 @@ from src.data_model.user.user_preferences import UserPreferences
 from src.database import DataBase, DataBaseTrips
 from src.path import get_path
 from src.recommendation import Recommendation
+from src.metrics import build_trip_day_metrics, write_trip_metrics_csv
 
 
 def _get_from_file(city, file_name='attractions.json'):
@@ -90,4 +91,14 @@ def get_recommendations(
 	itinerary = recommendation.get_itinerary()
 	trip_id = db_trips.save_trip_history(city, itinerary)
 	itinerary['id'] = trip_id
+	try:
+		day_metrics = build_trip_day_metrics(
+			recommendation.recommended_places,
+			preferences,
+			recommendation.weekday_indices,
+			city=recommendation.places.city,
+		)
+		write_trip_metrics_csv(trip_id, day_metrics)
+	except Exception as exc:
+		logging.exception('Failed to log trip metrics: %s', exc)
 	return itinerary

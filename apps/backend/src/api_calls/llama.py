@@ -36,6 +36,8 @@ SUMMARY_PROMPT = """
 class Llama:
 	# In Docker the LLM container is reachable as `llama`; override via LLAMA_API_URL for host runs.
 	API_URL = os.getenv('LLAMA_API_URL', 'http://llama:3000/v1/chat/completions')
+	# Allow long-running generations; override via LLAMA_API_TIMEOUT (seconds).
+	API_TIMEOUT = float(os.getenv('LLAMA_API_TIMEOUT', '180'))
 
 	CATEGORY_RULES = [
 		(
@@ -217,11 +219,10 @@ class Llama:
 				},
 			)
 
-			if response.encoding is None:
-				response.encoding = 'utf-8'
-
-			response_dict = json.loads(response.text)
-			content = response_dict['choices'][0]['message']['content']
+			content = cls._extract_llm_content(response)
+			if not content:
+				logging.warning('LLM returned empty summary content.')
+				return ''
 			if cls._needs_fallback(content, place_names, city):
 				return cls._generate_template_summary(city, category_counts)
 			return content
@@ -300,13 +301,54 @@ class Llama:
 			parts.append(f'{role}: {content}')
 		return '\n'.join(parts)
 
+	@staticmethod
+	def _safe_json_loads(text: str) -> Any | None:
+		if not text or not text.strip():
+			return None
+		try:
+			return json.loads(text)
+		except json.JSONDecodeError:
+			start = text.find('{')
+			end = text.rfind('}')
+			if start == -1 or end == -1 or end <= start:
+				return None
+			try:
+				return json.loads(text[start:end + 1])
+			except json.JSONDecodeError:
+				return None
+
+	@staticmethod
+	def _extract_llm_content(response: requests.Response) -> str:
+		if response.encoding is None:
+			response.encoding = 'utf-8'
+		response_text = response.text or ''
+		response_dict: dict[str, Any] | None = None
+		try:
+			response_dict = response.json()
+		except ValueError:
+			parsed = Llama._safe_json_loads(response_text)
+			if isinstance(parsed, dict):
+				response_dict = parsed
+		if not response_dict:
+			return ''
+		choices = response_dict.get('choices', [])
+		if not choices:
+			return ''
+		message = choices[0].get('message', {})
+		if not isinstance(message, dict):
+			return ''
+		content = message.get('content', '')
+		return str(content).strip()
+
 	@classmethod
 	def get_preferences_from_text(cls, text: str) -> dict[str, Any]:
+		categories_hint = ', '.join(all_categories)
 		prompt = (
 			'You are a travel preferences extractor. Return JSON only with keys: '
 			'money (0-3 integer), categories (object mapping category to subcategories array), '
 			'restaurant_categories (array), needs (array of '
 			'[wheelchairAccessible, goodForGroups, vegan, children, alcohol, allowsDogs]). '
+			f'Known categories: [{categories_hint}]. '
 			'Use only known categories and subcategories. If unsure, leave empty arrays.'
 		)
 		try:
@@ -320,19 +362,47 @@ class Llama:
 					'max_tokens': 300,
 					'temperature': 0.2,
 				},
-				timeout=10,
+				timeout=cls.API_TIMEOUT,
 			)
-			if response.encoding is None:
-				response.encoding = 'utf-8'
-			response_dict = json.loads(response.text)
-			content = response_dict['choices'][0]['message']['content']
-			parsed = json.loads(content)
+			content = cls._extract_llm_content(response)
+			if not content:
+				logging.warning('LLM returned empty preferences content.')
+				return cls._normalize_preferences({})
+			parsed = cls._safe_json_loads(content)
 			if not isinstance(parsed, dict):
-				raise ValueError('LLM output is not a JSON object.')
-			return cls._normalize_preferences(parsed)
+				logging.warning('LLM preferences response is not valid JSON: %s', content[:200])
+				return cls._normalize_preferences({})
+			normalized = cls._normalize_preferences(parsed)
+			return cls._apply_text_fallbacks(text, normalized)
 		except Exception as exc:
 			logging.exception(exc.__str__())
 			return cls._normalize_preferences({})
+
+	@staticmethod
+	def _apply_text_fallbacks(text: str, normalized: dict[str, Any]) -> dict[str, Any]:
+		if not text:
+			return normalized
+		lowered = text.lower()
+		categories = normalized.get('categories', {})
+		if categories == {category: [] for category in default_categories}:
+			nightlife_markers = [
+				'club',
+				'clubbing',
+				'nightlife',
+				'dj',
+				'party',
+				'rave',
+				'dancefloor',
+				'bas',
+				'imprez',
+				'klub',
+				'noc',
+				'parkiet',
+				'neon',
+			]
+			if any(marker in lowered for marker in nightlife_markers):
+				normalized['categories'] = {'night_club': []}
+		return normalized
 
 	@classmethod
 	def get_preferences_from_messages(cls, messages: list[dict[str, Any]]) -> dict[str, Any]:

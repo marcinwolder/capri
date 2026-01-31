@@ -1,6 +1,6 @@
 <app-background [image]="'2.jpg'" xmlns="http://www.w3.org/1999/html"></app-background>
 
-<div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-gray-900/30">
+<div *ngIf="!isLoaded&&!error" class="flex flex-col min-h-screen w-full justify-center items-center px-4 bg-slate-100/70">
   <ng-container *ngIf="loadingMode === 'generation'; else simpleLoader">
     <app-loading-checklist
       [cancelled]="cancelChecklist"
@@ -8,7 +8,7 @@
       [ready]="tripReady"
       (completed)="onChecklistCompleted()">
     </app-loading-checklist>
-    <p class="mt-4 text-white text-center text-lg opacity-80">
+    <p class="mt-4 text-slate-600 text-center text-lg">
       We’ll surface your itinerary as soon as these steps finish.
     </p>
   </ng-container>
@@ -20,7 +20,7 @@
       [ready]="tripReady"
       (completed)="onChecklistCompleted()">
     </app-loading-checklist>
-    <p class="mt-4 text-white text-center text-lg opacity-80">
+    <p class="mt-4 text-slate-600 text-center text-lg">
       Loading saved trip data...
     </p>
   </ng-template>
@@ -264,6 +264,87 @@
           </div>
         </div>
       </ng-container>
+    </div>
+
+    <div class="mt-8 bg-white border rounded-lg p-6 shadow-xs">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Trip Survey</h2>
+      <p class="text-gray-600 mb-6">
+        Please rate the itinerary. All fields are required.
+      </p>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">System Usability Scale (SUS)</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          1 = Strongly disagree, 5 = Strongly agree
+        </p>
+        <div class="space-y-4">
+          <div *ngFor="let question of susQuestions; let i = index" class="border rounded-lg p-4">
+            <div class="text-gray-800 mb-3">{{ i + 1 }}. {{ question }}</div>
+            <div class="flex flex-wrap gap-4">
+              <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="radio"
+                       [name]="'sus-'+i"
+                       [value]="rating"
+                       [(ngModel)]="susAnswers[i]" />
+                <span>{{ rating }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Customer Satisfaction (CSAT)</h3>
+        <p class="text-sm text-gray-500 mb-3">How satisfied are you with this route? (1–5)</p>
+        <app-rating class="text-2xl" [value]="csat" (onSetRating)="csat = $event"></app-rating>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Net Promoter Score (NPS)</h3>
+        <p class="text-sm text-gray-500 mb-3">How likely are you to recommend this route to a friend? (0–10)</p>
+        <div class="flex flex-wrap gap-3">
+          <label *ngFor="let rating of [0,1,2,3,4,5,6,7,8,9,10]" class="flex items-center gap-2 text-sm text-gray-700">
+            <input type="radio"
+                   name="nps"
+                   [value]="rating"
+                   [(ngModel)]="nps" />
+            <span>{{ rating }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Trip Experience</h3>
+        <p class="text-sm text-gray-500 mb-4">Rate each item from 1 (low) to 5 (high).</p>
+        <div class="space-y-4">
+          <div *ngFor="let question of subjectiveQuestions; let i = index" class="border rounded-lg p-4">
+            <div class="text-gray-800 mb-3">{{ question }}</div>
+            <div class="flex flex-wrap gap-4">
+              <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="radio"
+                       [name]="'subjective-'+i"
+                       [value]="rating"
+                       [(ngModel)]="subjectiveAnswers[i]" />
+                <span>{{ rating }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4">
+        <button class="px-5 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
+                [disabled]="surveySaving || !isSurveyComplete()"
+                (click)="submitSurvey()">
+          <span *ngIf="surveySaving">Saving...</span>
+          <span *ngIf="!surveySaving">Save survey</span>
+        </button>
+        <span *ngIf="surveySuccess" class="text-green-700">Survey saved.</span>
+        <span *ngIf="surveyError" class="text-red-600">{{ surveyError }}</span>
+        <span *ngIf="tripSurvey?.updated_at" class="text-xs text-gray-500">
+          Last updated: {{ tripSurvey?.updated_at | date:'medium' }}
+        </span>
+      </div>
     </div>
   </div>
 </ng-container>

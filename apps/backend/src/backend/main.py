@@ -17,6 +17,7 @@ from src.backend.get_trip_history import (
 from src.data_model import UserPreferences
 from src.database import DataBase, DataBaseTrips
 from src.api_calls.llama import Llama
+from src.metrics.survey_metrics import write_trip_survey_csv
 
 app = Flask(__name__)
 # Allow Angular dev server plus Electron's ephemeral 127.0.0.1:<random-port> origin.
@@ -25,6 +26,13 @@ CORS(app, resources={r'/api/*': {'origins': ALLOWED_ORIGINS}})
 
 db = DataBase()
 db_trips = DataBaseTrips()
+SURVEY_SUBJECTIVE_QUESTIONS = [
+	'Overall quality of the trip itinerary.',
+	'How well the itinerary matched your preferences.',
+	'Variety of attractions in the itinerary.',
+	'Pace and schedule balance.',
+	'Clarity of the itinerary.',
+]
 
 
 @app.route('/api/health', methods=['GET'])
@@ -92,6 +100,83 @@ def rate_trip(trip_id: str):
 	except Exception as exc:
 		logging.exception(exc)
 		return jsonify({'success': False, 'message': str(exc)}), 500
+
+
+@app.route('/api/trip-history/<trip_id>/survey', methods=['POST'])
+def submit_trip_survey(trip_id: str):
+	data = request.json or {}
+	sus_answers = data.get('sus_answers')
+	csat = data.get('csat')
+	nps = data.get('nps')
+	subjective_answers = data.get('subjective_answers')
+
+	if not isinstance(sus_answers, list) or len(sus_answers) != 10:
+		return jsonify({'success': False, 'message': 'sus_answers must be a list of 10 values.'}), 400
+	if not isinstance(subjective_answers, list) or len(subjective_answers) != len(SURVEY_SUBJECTIVE_QUESTIONS):
+		return jsonify({'success': False, 'message': 'subjective_answers must match the number of questions.'}), 400
+
+	try:
+		sus_answers = [int(value) for value in sus_answers]
+		subjective_answers = [int(value) for value in subjective_answers]
+		csat = int(csat)
+		nps = int(nps)
+	except Exception as exc:
+		return jsonify({'success': False, 'message': f'Invalid payload: {exc}'}), 400
+
+	if any(value < 1 or value > 5 for value in sus_answers):
+		return jsonify({'success': False, 'message': 'SUS answers must be in range 1-5.'}), 400
+	if any(value < 1 or value > 5 for value in subjective_answers):
+		return jsonify({'success': False, 'message': 'Subjective answers must be in range 1-5.'}), 400
+	if csat < 1 or csat > 5:
+		return jsonify({'success': False, 'message': 'CSAT must be in range 1-5.'}), 400
+	if nps < 0 or nps > 10:
+		return jsonify({'success': False, 'message': 'NPS must be in range 0-10.'}), 400
+
+	sus_score = 0
+	for idx, answer in enumerate(sus_answers):
+		if idx % 2 == 0:
+			sus_score += answer - 1
+		else:
+			sus_score += 5 - answer
+	sus_score = round(sus_score * 2.5, 2)
+	subjective_avg = round(sum(subjective_answers) / len(subjective_answers), 2)
+
+	try:
+		existing = db_trips.get_trip(trip_id)
+		existing_survey = existing.get('survey') or {}
+		submitted_at = existing_survey.get('submitted_at')
+	except Exception:
+		submitted_at = None
+
+	timestamp = datetime.utcnow().isoformat()
+	survey = {
+		'sus': {
+			'answers': sus_answers,
+			'score': sus_score,
+		},
+		'csat': csat,
+		'nps': nps,
+		'subjective': {
+			'questions': SURVEY_SUBJECTIVE_QUESTIONS,
+			'answers': subjective_answers,
+		},
+		'subjective_avg': subjective_avg,
+		'submitted_at': submitted_at or timestamp,
+		'updated_at': timestamp,
+	}
+
+	try:
+		db_trips.set_trip_survey(trip_id, survey)
+	except Exception as exc:
+		logging.exception(exc)
+		return jsonify({'success': False, 'message': str(exc)}), 500
+
+	try:
+		write_trip_survey_csv(trip_id, survey)
+	except Exception as exc:
+		logging.exception('Failed to log survey metrics: %s', exc)
+
+	return jsonify({'success': True, 'data': survey}), 200
 
 
 @app.route('/api/trip-history/<trip_id>', methods=['DELETE'])
@@ -271,6 +356,10 @@ def get_with_note():
 	if not data:
 		return jsonify({'status': 'error', 'message': 'No data in the request'})
 	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	logging.info(
+		'Preferences extracted from note: %s',
+		preferences,
+	)
 	data['preferences'] = preferences
 	try:
 		recommendation = _build_recommendation_from_free_text(data, use_wibit=False)
@@ -309,6 +398,10 @@ def get_with_note_wibit():
 	if not data:
 		return jsonify({'status': 'error', 'message': 'No data in the request'})
 	preferences = Llama.get_preferences_from_text(data.get('preferences', ''))
+	logging.info(
+		'Preferences extracted from note (wibit): %s',
+		preferences,
+	)
 	data['preferences'] = preferences
 	try:
 		recommendation = _build_recommendation_from_free_text(data, use_wibit=True)

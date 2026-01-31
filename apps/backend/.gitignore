@@ -25,3 +25,4 @@ new_models/
 doc2vec
 *.db
 *.sqlite
+.venv

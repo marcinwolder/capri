@@ -71,6 +71,10 @@ class SplitForDays:
 			)
 
 		data = np.array(data)
+		if data.size == 0:
+			return [
+				Places([], city=self.places.city) for _ in self.weekday_indices
+			]
 
 		k = self.days
 		centroids, cluster_assignment, w_averages = constrained_kmeans(

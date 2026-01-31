@@ -1,0 +1,6 @@
+day,total_route_km,time_conflicts,cluster_distance_km,sentiment_alignment_pct,avoidance_rate,diversity_score
+1,27.024,0,4.626,37.5,4,1.429
+2,7.702,0,1.459,11.11,9,0.714
+3,32.915,0,4.618,50.0,6,1.286
+4,17.167,0,7.265,37.5,4,1.143
+5,32.262,0,5.714,57.14,3,0.857

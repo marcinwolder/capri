@@ -120,3 +120,15 @@ class DataBaseTrips:
 			self._persist(data)
 			return
 		raise ValueError(f'Trip {trip_id} not found')
+
+	def set_trip_survey(self, trip_id: str, survey: dict):
+		"""Update survey for a stored trip."""
+		data = self._load()
+		trips = data.get('trips', [])
+		for trip in trips:
+			if trip.get('id') != trip_id:
+				continue
+			trip['survey'] = survey
+			self._persist(data)
+			return
+		raise ValueError(f'Trip {trip_id} not found')
