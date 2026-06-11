@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import { Place } from '../../data-model/place';
 import {RecommendationService} from "../../services/recommendation.service";
 import {TripHistoryService} from "../../services/trip-history.service";
@@ -40,7 +41,8 @@ export class TripComponent implements OnInit{
   llamaHost = environment.llamaHost.replace(/\/$/, '');
 
   constructor(private recommendationService: RecommendationService, private tripHistoryService: TripHistoryService,
-              private restaurantsService: RestaurantsService, private serviceStatus: ServiceStatusService) {
+              private restaurantsService: RestaurantsService, private serviceStatus: ServiceStatusService,
+              private route: ActivatedRoute) {
     this.backendOffline$ = this.serviceStatus.backendOffline$;
     this.llamaOffline$ = this.serviceStatus.llamaOffline$;
     this.checkingServices$ = this.serviceStatus.checking$;
@@ -51,10 +53,20 @@ export class TripComponent implements OnInit{
 
   ngOnInit(): void {
     this.resetLoadingState();
-    this.loadingMode = this.recommendationService.getTripLoadMode();
+    const mockFile = this.route.snapshot.queryParamMap.get('file');
+    this.loadingMode = mockFile ? 'history' : this.recommendationService.getTripLoadMode();
     this.waitForReadyIndex = this.loadingMode === 'generation' ? 2 : 0;
-    this.recommendationService.getRecommendedTrip().subscribe({
+    const trip$ = mockFile
+      ? this.tripHistoryService.getMockTrip(mockFile)
+      : this.recommendationService.getRecommendedTrip();
+
+    trip$.subscribe({
       next: (trip) => {
+        if (!trip) {
+          this.error = mockFile ? 'Unable to load mock trip.' : 'Unable to load trip.';
+          this.cancelChecklist = true;
+          return;
+        }
         this.attractions = trip.days.map(day => day.places.map(attraction => {
             return {...attraction, visible: false}
         }));
@@ -129,6 +141,9 @@ export class TripComponent implements OnInit{
   surveySuccess = false;
 
   getImageUrl(place: Place): string {
+    if (!place.image?.name) {
+      return 'assets/images/capri.png';
+    }
     const backendHost = environment.backendHost.endsWith('/')
       ? environment.backendHost.slice(0, -1)
       : environment.backendHost;

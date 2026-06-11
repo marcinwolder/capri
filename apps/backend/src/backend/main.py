@@ -14,6 +14,7 @@ from src.backend.get_trip_history import (
 	get_trip_history,
 	get_trip_history_overview,
 )
+from src.backend.mock_trip import load_mock_trip
 from src.data_model import UserPreferences
 from src.database import DataBase, DataBaseTrips
 from src.api_calls.llama import Llama
@@ -82,6 +83,22 @@ def trip_details(trip_id: str):
 				'message': str(e),
 			}
 		), 500
+
+
+@app.route('/api/mock-trip', methods=['GET'])
+def get_mock_trip():
+	file_name = request.args.get('file', '').strip()
+	if not file_name:
+		return jsonify({'success': False, 'message': 'Query param "file" is required.'}), 400
+
+	try:
+		trip = load_mock_trip(file_name)
+		return jsonify({'success': True, 'data': trip}), 200
+	except (FileNotFoundError, ValueError) as exc:
+		return jsonify({'success': False, 'message': str(exc)}), 400
+	except Exception as exc:
+		logging.exception(exc)
+		return jsonify({'success': False, 'message': str(exc)}), 500
 
 
 @app.route('/api/trip-history/<trip_id>/rating', methods=['POST'])

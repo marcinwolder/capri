@@ -1,0 +1,119 @@
+@startuml
+title CAPRI Trip Plan Creation Pipeline (Action Diagram)
+
+start
+
+:Create trip plan request context;
+:Resolve date range and preferences;
+
+if (Algorithm mode?) then (Legacy)
+  :Load attractions (DB cache or external fetch);
+  :Calculate cumulative rating per place;
+  :Normalize opening-hours edge cases;
+  :Fetch weather for selected dates;
+  :Filter places with cumulative rating > 0;
+
+  if (Any positively rated places?) then (Yes)
+    :Split places for days\n(constrained k-means + opening-hours constraints);
+    if (Any open places assigned to days?) then (Yes)
+      :For each day, build VRP time matrix;
+      :Estimate pairwise travel time and mode;
+      if (distance > 5km?) then (Yes)
+        if (City in Poland?) then (Yes)
+          :Try OSRM travel-time lookup;
+          if (OSRM success?) then (Yes)
+            :Use OSRM-based CAR travel time;
+          else (No)
+            :Fallback to regression CAR model;
+          endif
+        else (No)
+          :Use regression CAR model;
+        endif
+      else (No)
+        :Use regression FOOT model;
+      endif
+
+      :Solve OR-Tools VRP with time windows;
+      if (Solver found solution?) then (Yes)
+        :Extract ordered route + transport segments;
+      else (No)
+        :Raise exception: No solution found;
+        :Return error response;
+        stop
+      endif
+    else (No)
+      :Use empty day schedules;
+    endif
+  else (No)
+    :Use empty day schedules;
+  endif
+
+  :Generate trip summary via Llama;
+  if (Summary generation failed?) then (Yes)
+    :Propagate exception;
+    :Return error response;
+    stop
+  else (No)
+    :Continue;
+  endif
+
+  :Build itinerary payload;
+  :Persist trip history;
+  :Attach trip id to itinerary;
+  :Build day metrics;
+  if (Metrics logging failed?) then (Yes)
+    :Log exception;\ncontinue (non-fatal);
+  else (No)
+    :Write metrics CSV;
+  endif
+  :Return success response with itinerary;
+
+else (WiBIT)
+  :Load attractions (DB cache or external fetch);
+  :Convert places to POI candidates;
+  :Skip places without coordinates;
+
+  if (Any POI candidates?) then (Yes)
+    :Build user constraints\n(category + proximity);
+    :Evaluate POI scores;
+    :Iterate days in selected range;
+    :Extract best non-duplicate candidates per day;
+    :Build trajectory (MST -> 2-opt -> start optimization);
+    :Estimate inter-POI travel;
+    if (distance < 500m?) then (Yes)
+      :Assign FOOT transport;
+    else (No)
+      :Assign CAR transport;
+    endif
+
+    :Map trajectory events to itinerary places;
+    :Build day outputs (weather placeholder);
+    if (City name available?) then (Yes)
+      :Generate summary via Llama;
+      if (Summary generation failed?) then (Yes)
+        :Propagate exception;
+        :Return error response;
+        stop
+      else (No)
+        :Continue;
+      endif
+    else (No)
+      :Use empty summary;
+    endif
+  else (No)
+    :Early return itinerary\n(no POIs found);
+  endif
+
+  :Persist trip history;
+  :Attach trip id + city metadata;
+  :Build day metrics from selected places;
+  if (Metrics logging failed?) then (Yes)
+    :Log exception;\ncontinue (non-fatal);
+  else (No)
+    :Write metrics CSV;
+  endif
+  :Return success response with itinerary;
+endif
+
+stop
+@enduml

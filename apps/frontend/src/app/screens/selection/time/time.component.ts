@@ -14,6 +14,10 @@ const PreferencesMethods = [
 ];
 
 type PreferencesMethod = typeof PreferencesMethods[number];
+type TripMode = 'standard' | 'night' | 'luxury' | 'budget';
+type DayRhythm = 'balanced' | 'owl' | 'lark';
+type GroupingMode = 'current' | 'multi-day-vrp';
+type RouteMode = 'mst-2opt' | 'christofides';
 
 @Component({
   selector: 'app-time',
@@ -83,6 +87,12 @@ export class TimeComponent implements OnInit{
   hasSavedPreferences = false;
   rodoAccepted = false;
   algorithmMode: 'legacy' | 'wibit' = 'legacy';
+  tripMode: TripMode = 'standard';
+  dayRhythm: DayRhythm = 'balanced';
+  groupingMode: GroupingMode = 'current';
+  routeMode: RouteMode = 'mst-2opt';
+  diversityLevel = 60;
+  humanTouchLevel = 50;
 
   setDates(dates: [Date, Date]) {
     this.dates = dates;
@@ -100,5 +110,21 @@ export class TimeComponent implements OnInit{
   setAlgorithm(mode: 'legacy' | 'wibit') {
     this.algorithmMode = mode;
     this.recommendationService.setAlgorithmMode(mode);
+  }
+
+  setTripMode(mode: TripMode) {
+    this.tripMode = mode;
+  }
+
+  setDayRhythm(rhythm: DayRhythm) {
+    this.dayRhythm = rhythm;
+  }
+
+  setGroupingMode(mode: GroupingMode) {
+    this.groupingMode = mode;
+  }
+
+  setRouteMode(mode: RouteMode) {
+    this.routeMode = mode;
   }
 }

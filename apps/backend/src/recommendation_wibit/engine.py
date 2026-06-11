@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from itertools import permutations
 from math import cos, pi, sqrt
 from typing import Dict, List, Sequence, Tuple
+
+import networkx as nx
+from networkx.algorithms.approximation.traveling_salesman import christofides
 
 from src.api_calls.llama import Llama
 from src.data_model.place.place import Place
@@ -19,6 +23,7 @@ PROXIMITY_RADIUS_M = 500
 SHORT_DIST = 500
 WALKING_SPEED = 0.5  # m/s
 DRIVING_SPEED = 3.7  # m/s
+MAX_BRUTE_FORCE_POINTS = 8
 
 
 @dataclass
@@ -278,40 +283,176 @@ def opt_1(path: List[int], graph: List[List[float]]) -> List[int]:
     return new_path
 
 
+def build_directed_cost_matrix(pois_score: List[Tuple[PointOfInterest, float]]) -> List[List[float]]:
+    points = [poi for poi, _ in pois_score]
+    size = len(points)
+    matrix = [[0.0 for _ in range(size)] for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            if i == j:
+                continue
+            matrix[i][j] = dist(points[i], points[j])
+    return matrix
+
+
+def symmetrize_cost_matrix_avg(directed: List[List[float]]) -> List[List[float]]:
+    size = len(directed)
+    sym = [[0.0 for _ in range(size)] for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            if i == j:
+                sym[i][j] = 0.0
+                continue
+            avg = (directed[i][j] + directed[j][i]) / 2.0
+            sym[i][j] = avg
+    return sym
+
+
+def enforce_triangle_inequality_metric_closure(matrix: List[List[float]]) -> List[List[float]]:
+    size = len(matrix)
+    closure = [[matrix[i][j] for j in range(size)] for i in range(size)]
+    for i in range(size):
+        closure[i][i] = 0.0
+    for k in range(size):
+        for i in range(size):
+            dik = closure[i][k]
+            for j in range(size):
+                via = dik + closure[k][j]
+                if via < closure[i][j]:
+                    closure[i][j] = via
+    return closure
+
+
+def _path_cost(path: Sequence[int], graph: List[List[float]]) -> float:
+    total = 0.0
+    for i in range(len(path) - 1):
+        total += graph[path[i]][path[i + 1]]
+    return total
+
+
+def _cycle_edge_cost(cycle: Sequence[int], graph: List[List[float]], edge_index: int) -> float:
+    size = len(cycle)
+    u = cycle[edge_index]
+    v = cycle[(edge_index + 1) % size]
+    return graph[u][v]
+
+
+def cycle_to_open_path_by_removing_max_edge(cycle: Sequence[int], graph: List[List[float]]) -> List[int]:
+    if not cycle:
+        return []
+    if len(cycle) == 1:
+        return [cycle[0]]
+    split_idx = 0
+    max_edge = _cycle_edge_cost(cycle, graph, 0)
+    for idx in range(1, len(cycle)):
+        edge_cost = _cycle_edge_cost(cycle, graph, idx)
+        if edge_cost > max_edge:
+            max_edge = edge_cost
+            split_idx = idx
+    path = list(cycle[split_idx + 1 :]) + list(cycle[: split_idx + 1])
+    reversed_path = list(reversed(path))
+    return path if tuple(path) <= tuple(reversed_path) else reversed_path
+
+
+def solve_open_tsp_bruteforce(graph: List[List[float]]) -> List[int]:
+    size = len(graph)
+    if size <= 1:
+        return [0] if size == 1 else []
+    best_path: Tuple[int, ...] | None = None
+    best_cost = float('inf')
+    for perm in permutations(range(size)):
+        cost = _path_cost(perm, graph)
+        if cost < best_cost or (cost == best_cost and (best_path is None or perm < best_path)):
+            best_cost = cost
+            best_path = perm
+    return list(best_path) if best_path is not None else list(range(size))
+
+
+def _has_matrix_anomalies(graph: List[List[float]]) -> bool:
+    size = len(graph)
+    if size == 0:
+        return False
+    if any(len(row) != size for row in graph):
+        return True
+    for i in range(size):
+        if graph[i][i] != 0:
+            return True
+        for j in range(size):
+            if i == j:
+                continue
+            val = graph[i][j]
+            if val < 0:
+                return True
+    return False
+
+
+def _build_christofides_cycle(metric_graph: List[List[float]]) -> List[int]:
+    size = len(metric_graph)
+    graph_nx = nx.Graph()
+    graph_nx.add_nodes_from(range(size))
+    for i in range(size):
+        for j in range(i + 1, size):
+            graph_nx.add_edge(i, j, weight=metric_graph[i][j])
+    if not nx.is_connected(graph_nx):
+        raise ValueError('Graph is disconnected')
+    cycle = list(christofides(graph_nx, weight='weight'))
+    if cycle and cycle[0] == cycle[-1]:
+        cycle = cycle[:-1]
+    if len(cycle) != size or len(set(cycle)) != size:
+        raise ValueError('Invalid cycle returned by Christofides')
+    return cycle
+
+
+def build_visit_order(graph: List[List[float]]) -> List[int]:
+    size = len(graph)
+    if size <= 1:
+        return [0] if size == 1 else []
+    if size <= MAX_BRUTE_FORCE_POINTS:
+        return solve_open_tsp_bruteforce(graph)
+    if _has_matrix_anomalies(graph):
+        return list(range(size))
+    try:
+        sym_graph = symmetrize_cost_matrix_avg(graph)
+        metric_graph = enforce_triangle_inequality_metric_closure(sym_graph)
+        cycle = _build_christofides_cycle(metric_graph)
+        return cycle_to_open_path_by_removing_max_edge(cycle, metric_graph)
+    except Exception:
+        return list(range(size))
+
+
 def build_trajectory(day: Day, pois_score: List[Tuple[PointOfInterest, float]], time_provider: VisitingTimeProvider) -> Trajectory:
     if not pois_score:
         return Trajectory(events=[])
-    graph = [[dist(i, j) for i, _ in pois_score] for j, _ in pois_score]
-    mst_graph = get_mst(graph)
-    path = estimated_shp_from_mst(mst_graph)
-    path2 = opt_2(path, graph)
-    better_path = opt_1(path2, graph)
+    graph = build_directed_cost_matrix(pois_score)
+    order = build_visit_order(graph)
+    if not order:
+        return Trajectory(events=[])
 
     curr = day.start
     travel_time = timedelta()
-    next_visiting = time_provider.get_visiting_time(pois_score[better_path[0]][0])
+    next_visiting = time_provider.get_visiting_time(pois_score[order[0]][0])
     events: List[Event] = []
 
-    for n in range(len(path)):
+    for n in range(len(order)):
         if curr + travel_time + next_visiting < day.end:
             travel_seconds = int(travel_time.total_seconds()) if n > 0 else 0
-            travel_mode = 'FOOT' if (n == 0 or graph[path[n - 1]][path[n]] < SHORT_DIST) else 'CAR'
+            travel_mode = 'FOOT' if (n == 0 or graph[order[n - 1]][order[n]] < SHORT_DIST) else 'CAR'
             events.append(
                 Event(
                     start=round_time(curr + travel_time).time(),
                     end=round_time(curr + travel_time + next_visiting).time(),
-                    poi=pois_score[better_path[n]][0],
+                    poi=pois_score[order[n]][0],
                     travel_seconds=travel_seconds,
                     travel_mode=travel_mode,
                 )
             )
-            if n + 1 >= len(path):
+            if n + 1 >= len(order):
                 break
             curr += travel_time + next_visiting
             curr = round_time(curr)
-            edge_seconds = estimated_time(graph[path[n]][path[n + 1]])
+            edge_seconds = estimated_time(graph[order[n]][order[n + 1]])
             travel_time = timedelta(seconds=edge_seconds)
-            next_visiting = time_provider.get_visiting_time(pois_score[better_path[n + 1]][0])
+            next_visiting = time_provider.get_visiting_time(pois_score[order[n + 1]][0])
     return Trajectory(events=events)
 
 

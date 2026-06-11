@@ -64,6 +64,21 @@ export class TripHistoryService {
     );
   }
 
+  public getMockTrip(fileName: string) {
+    return this.http.get<TripHistoryResponse>(`${environment.backendHost}api/mock-trip?file=${encodeURIComponent(fileName)}`).pipe(
+      map(response => {
+        if (!response.success || !response.data) {
+          throw new Error('Failed to fetch mock trip');
+        }
+        return response.data as Trip;
+      }),
+      catchError(error => {
+        console.error('Error fetching mock trip:', error);
+        return of(null);
+      })
+    );
+  }
+
   rateTripAttraction(tripId: string, day_index: number, attraction_index: number, rating: number): Observable<boolean> {
     const body = {
       day_index,

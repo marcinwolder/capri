@@ -35,6 +35,167 @@
     </div>
   </div>
 
+  <div class="mt-8 w-full max-w-5xl px-4">
+    <h2 class="text-2xl font-bold text-center text-shadow mb-6">Advanced algorithm options</h2>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div *ngIf="algorithmMode !== 'wibit'" class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <h3 class="text-xl font-semibold text-gray-800 text-center">Trip grouping</h3>
+        <p class="text-sm text-gray-500 text-center mt-2">Controls how attractions are split across multiple days.</p>
+        <div class="grid grid-cols-1 gap-3 mt-4">
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="groupingMode === 'current' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setGroupingMode('current')">
+            <div class="font-semibold">Constrained k-means</div>
+            <div class="text-sm opacity-80">Uses the current day-splitting method from the classic recommendation engine.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="groupingMode === 'multi-day-vrp' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setGroupingMode('multi-day-vrp')">
+            <div class="font-semibold">Multi-day VRP</div>
+            <div class="text-sm opacity-80">Focuses on planning all days together instead of splitting them first.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <h3 class="text-xl font-semibold text-gray-800 text-center">Daily route</h3>
+        <p class="text-sm text-gray-500 text-center mt-2">Controls how the order of places inside one day is arranged.</p>
+        <div class="grid grid-cols-1 gap-3 mt-4">
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="routeMode === 'mst-2opt' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setRouteMode('mst-2opt')">
+            <div class="font-semibold">OR-Tools VRP</div>
+            <div class="text-sm opacity-80">Uses the current classic route planner with time windows and routing constraints.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="routeMode === 'christofides' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setRouteMode('christofides')">
+            <div class="font-semibold">Christofides</div>
+            <div class="text-sm opacity-80">Prefers a more global route construction strategy for the whole day.</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 w-full max-w-5xl px-4">
+    <h2 class="text-2xl font-bold text-center text-shadow mb-6">Trip style</h2>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <h3 class="text-xl font-semibold text-gray-800 text-center">Trip mode</h3>
+        <p class="text-sm text-gray-500 text-center mt-2">Changes the general tone of recommendations for the whole trip.</p>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="tripMode === 'standard' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setTripMode('standard')">
+            <div class="font-semibold">Standard</div>
+            <div class="text-sm opacity-80">Keeps a balanced mix of places without a strong bias.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="tripMode === 'night' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setTripMode('night')">
+            <div class="font-semibold">Night</div>
+            <div class="text-sm opacity-80">Pushes the plan toward later hours and evening activity.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="tripMode === 'luxury' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setTripMode('luxury')">
+            <div class="font-semibold">Luxury</div>
+            <div class="text-sm opacity-80">Favors higher-end places and a more premium experience.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="tripMode === 'budget' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setTripMode('budget')">
+            <div class="font-semibold">Budget</div>
+            <div class="text-sm opacity-80">Leans toward cheaper options and cost-aware planning.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <h3 class="text-xl font-semibold text-gray-800 text-center">Day rhythm</h3>
+        <p class="text-sm text-gray-500 text-center mt-2">Changes whether the day starts earlier or shifts toward later hours.</p>
+        <div class="grid grid-cols-1 gap-3 mt-4">
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="dayRhythm === 'balanced' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setDayRhythm('balanced')">
+            <div class="font-semibold">Balanced</div>
+            <div class="text-sm opacity-80">Keeps a typical daily schedule with no strong time preference.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="dayRhythm === 'owl' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setDayRhythm('owl')">
+            <div class="font-semibold">Owl</div>
+            <div class="text-sm opacity-80">Moves activities later and gives more weight to the evening.</div>
+          </button>
+          <button
+            class="rounded-xl border px-4 py-3 text-left transition-colors"
+            [ngClass]="dayRhythm === 'lark' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+            (click)="setDayRhythm('lark')">
+            <div class="font-semibold">Lark</div>
+            <div class="text-sm opacity-80">Starts the plan earlier and prefers daytime activity.</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 w-full max-w-5xl px-4">
+    <h2 class="text-2xl font-bold text-center text-shadow mb-6">Plan tuning</h2>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <div class="flex justify-between items-center gap-4">
+          <h3 class="text-xl font-semibold text-gray-800">Diversity</h3>
+          <span class="text-sm font-semibold text-gray-500">{{ diversityLevel }}%</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Higher values reduce repeating similar places in the same day.</p>
+        <input
+          class="w-full mt-5 accent-blue-500"
+          type="range"
+          min="0"
+          max="100"
+          [value]="diversityLevel"
+          (input)="diversityLevel = +$any($event.target).value">
+        <div class="flex justify-between text-xs text-gray-400 mt-2">
+          <span>More repetition</span>
+          <span>More variety</span>
+        </div>
+      </div>
+
+      <div class="bg-white bg-opacity-90 rounded-2xl shadow-lg p-5">
+        <div class="flex justify-between items-center gap-4">
+          <h3 class="text-xl font-semibold text-gray-800">Human touch</h3>
+          <span class="text-sm font-semibold text-gray-500">{{ humanTouchLevel }}%</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Higher values favor atmosphere and experience over pure route efficiency.</p>
+        <input
+          class="w-full mt-5 accent-blue-500"
+          type="range"
+          min="0"
+          max="100"
+          [value]="humanTouchLevel"
+          (input)="humanTouchLevel = +$any($event.target).value">
+        <div class="flex justify-between text-xs text-gray-400 mt-2">
+          <span>Shortest route</span>
+          <span>Best atmosphere</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h1 class="text-3xl font-bold text-center text-shadow my-5">How do you want to set preferences?</h1>
   <app-error-box *ngIf="nextClicked&&!preferencesMethod">
     Please select how do you want to set your preferences
