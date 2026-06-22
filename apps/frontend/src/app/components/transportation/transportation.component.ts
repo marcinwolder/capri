@@ -17,7 +17,12 @@ export class TransportationComponent {
 
   get mode(): 'car' | 'foot' {
     const raw = (this.transportation?.[1] || '').toLowerCase();
-    if (raw.includes('car')) {
+    if (
+      raw.includes('car') ||
+      raw.includes('driv') ||
+      raw.includes('taxi') ||
+      raw.includes('uber')
+    ) {
       return 'car';
     }
     if (raw.includes('foot') || raw.includes('walk')) {

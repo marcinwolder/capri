@@ -19,6 +19,116 @@ type DayRhythm = 'balanced' | 'owl' | 'lark';
 type GroupingMode = 'current' | 'multi-day-vrp';
 type RouteMode = 'mst-2opt' | 'christofides';
 
+type DayPreview = {
+  dayLabel: string;
+  firstAttractionHour: string;
+  lastAttractionHour: string;
+  totalAttractions: number;
+  barOrClubAttractions: number;
+  clubs: number;
+  bars: number;
+  cafes: number;
+};
+
+type RhythmPreview = {
+  label: string;
+  city: string;
+  tripLengthDays: number;
+  mode: string;
+  nightlifeShare: string;
+  days: DayPreview[];
+};
+
+const RHYTHM_PREVIEWS: Record<DayRhythm, RhythmPreview> = {
+  balanced: {
+    label: 'Balanced',
+    city: 'Rome',
+    tripLengthDays: 2,
+    mode: 'Balanced',
+    nightlifeShare: '25%',
+    days: [
+      {
+        dayLabel: 'Day 1',
+        firstAttractionHour: '09:00',
+        lastAttractionHour: '22:00',
+        totalAttractions: 7,
+        barOrClubAttractions: 2,
+        clubs: 0,
+        bars: 1,
+        cafes: 1
+      },
+      {
+        dayLabel: 'Day 2',
+        firstAttractionHour: '10:00',
+        lastAttractionHour: '23:00',
+        totalAttractions: 8,
+        barOrClubAttractions: 3,
+        clubs: 1,
+        bars: 1,
+        cafes: 1
+      }
+    ]
+  },
+  lark: {
+    label: 'Lark',
+    city: 'Rome',
+    tripLengthDays: 2,
+    mode: 'Morning bird',
+    nightlifeShare: '13%',
+    days: [
+      {
+        dayLabel: 'Day 1',
+        firstAttractionHour: '08:00',
+        lastAttractionHour: '20:00',
+        totalAttractions: 8,
+        barOrClubAttractions: 1,
+        clubs: 0,
+        bars: 0,
+        cafes: 1
+      },
+      {
+        dayLabel: 'Day 2',
+        firstAttractionHour: '08:00',
+        lastAttractionHour: '21:00',
+        totalAttractions: 8,
+        barOrClubAttractions: 1,
+        clubs: 0,
+        bars: 1,
+        cafes: 0
+      }
+    ]
+  },
+  owl: {
+    label: 'Owl',
+    city: 'Rome',
+    tripLengthDays: 2,
+    mode: 'Night owl',
+    nightlifeShare: '40%',
+    days: [
+      {
+        dayLabel: 'Day 1',
+        firstAttractionHour: '11:00',
+        lastAttractionHour: '00:00',
+        totalAttractions: 6,
+        barOrClubAttractions: 3,
+        clubs: 1,
+        bars: 1,
+        cafes: 1
+      },
+      {
+        dayLabel: 'Day 2',
+        firstAttractionHour: '12:00',
+        lastAttractionHour: '01:00',
+        totalAttractions: 7,
+        barOrClubAttractions: 4,
+        clubs: 2,
+        bars: 1,
+        cafes: 1
+      }
+    ]
+  }
+};
+
 @Component({
   selector: 'app-time',
   templateUrl: './time.component.html',
@@ -118,6 +228,10 @@ export class TimeComponent implements OnInit{
 
   setDayRhythm(rhythm: DayRhythm) {
     this.dayRhythm = rhythm;
+  }
+
+  get dayRhythmPreview(): RhythmPreview {
+    return RHYTHM_PREVIEWS[this.dayRhythm];
   }
 
   setGroupingMode(mode: GroupingMode) {

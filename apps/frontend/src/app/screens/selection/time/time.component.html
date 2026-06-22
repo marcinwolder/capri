@@ -148,6 +148,50 @@
             <div class="text-sm opacity-80">Starts the plan earlier and prefers daytime activity.</div>
           </button>
         </div>
+
+        <div class="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-4 text-gray-700">
+          <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Scenario preview</div>
+              <div class="text-lg font-semibold">{{ dayRhythmPreview.city }} · {{ dayRhythmPreview.tripLengthDays }} days · {{ dayRhythmPreview.mode }}</div>
+            </div>
+            <div class="text-sm text-slate-500">Nightlife share: <span class="font-semibold text-slate-700">{{ dayRhythmPreview.nightlifeShare }}</span></div>
+          </div>
+
+          <div class="grid gap-3 mt-4">
+            <div *ngFor="let day of dayRhythmPreview.days" class="rounded-xl bg-white border border-slate-200 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div class="font-semibold text-gray-800">{{ day.dayLabel }}</div>
+                <div class="text-sm text-slate-500">{{ day.totalAttractions }} attractions</div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 mt-3 text-sm md:grid-cols-4">
+                <div class="rounded-lg bg-slate-50 p-3">
+                  <div class="text-slate-500">First attraction</div>
+                  <div class="font-semibold text-gray-800">{{ day.firstAttractionHour }}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-3">
+                  <div class="text-slate-500">Last attraction</div>
+                  <div class="font-semibold text-gray-800">{{ day.lastAttractionHour }}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-3">
+                  <div class="text-slate-500">Bar/club stops</div>
+                  <div class="font-semibold text-gray-800">{{ day.barOrClubAttractions }}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 p-3">
+                  <div class="text-slate-500">Clubs</div>
+                  <div class="font-semibold text-gray-800">{{ day.clubs }}</div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                <div class="rounded-full bg-blue-50 text-blue-700 px-3 py-1">Bars: {{ day.bars }}</div>
+                <div class="rounded-full bg-amber-50 text-amber-700 px-3 py-1">Cafes: {{ day.cafes }}</div>
+                <div class="rounded-full bg-rose-50 text-rose-700 px-3 py-1">Clubs: {{ day.clubs }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
